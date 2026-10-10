@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<title>Panel Servicio Médico</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{--pri:#0f766e;--pri2:#115e59;--bg:#f1f5f9;--card:#fff;--txt:#0f172a;--mut:#64748b;--line:#e2e8f0;
+--c:#0284c7;--a:#dc2626;--i:#7c3aed;--n1:#16a34a;--n2:#eab308;--n3:#f97316;--n4:#dc2626;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+header{background:var(--pri);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+header h1{margin:0;font-size:20px}
+header .sub{font-size:12px;opacity:.85}
+.hbtns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:8px;padding:9px 13px;font-size:13px;font-weight:700;cursor:pointer;background:var(--pri);color:#fff;white-space:nowrap}
+header .btn{background:rgba(255,255,255,.15);color:#fff}
+header .btn:hover{background:rgba(255,255,255,.25)}
+.btn.sec{background:#e2e8f0;color:var(--txt)}
+.btn.bad{background:var(--bad)}
+.btn.sm{padding:6px 10px;font-size:12px}
+main{padding:16px 20px 40px;max-width:1400px;margin:0 auto}
+.filtros{background:var(--card);border-radius:12px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;box-shadow:0 1px 2px rgba(0,0,0,.06);margin-bottom:14px}
+.filtros label{font-size:11px;color:var(--mut);font-weight:700;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.03em}
+.filtros input,.filtros select{padding:7px 8px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px;background:#fff;color:var(--txt)}
+.quick{display:flex;gap:4px}
+.quick button{border:1px solid #cbd5e1;background:#fff;border-radius:7px;padding:7px 9px;font-size:12px;cursor:pointer;font-weight:600}
+.quick button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border-radius:12px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,.06);border-left:4px solid var(--pri)}
+.kpi .l{font-size:11px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.kpi .v{font-size:26px;font-weight:800;margin-top:4px;line-height:1.1}
+.kpi .s{font-size:12px;color:var(--mut);margin-top:3px}
+.kpi.ok{border-left-color:var(--ok)}.kpi.warn{border-left-color:var(--warn)}.kpi.bad{border-left-color:var(--bad)}
+.kpi.ok .v{color:var(--ok)}.kpi.warn .v{color:var(--warn)}.kpi.bad .v{color:var(--bad)}
+.sec-title{font-size:15px;font-weight:800;color:var(--pri2);margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+.sec-title:after{content:"";flex:1;height:1px;background:var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:14px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}main{padding:12px}}
+.card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.06);min-width:0}
+.card h3{margin:0 0 2px;font-size:14px}
+.card .desc{font-size:12px;color:var(--mut);margin-bottom:8px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{font-family:inherit}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--mut);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.insight{background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px;padding:8px 10px;font-size:12.5px;color:#134e4a;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;background:#f8fafc;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:8px;border-bottom:1px solid var(--line);position:sticky;top:0}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr{cursor:pointer}tbody tr:hover{background:#f8fafc}
+.tbl{max-height:520px;overflow:auto}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#e2e8f0;color:#334155;white-space:nowrap}
+.pill.n1{background:#dcfce7;color:#166534}.pill.n2{background:#fef9c3;color:#854d0e}.pill.n3{background:#ffedd5;color:#9a3412}.pill.n4{background:#fee2e2;color:#991b1b}
+.pill.c{background:#e0f2fe;color:#075985}.pill.a{background:#fee2e2;color:#991b1b}.pill.i{background:#ede9fe;color:#5b21b6}
+.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.bad{background:#fee2e2;color:#991b1b}
+.empty{padding:40px 10px;text-align:center;color:var(--mut)}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .box{background:#fff;width:100%;max-width:720px;max-height:90vh;overflow:auto;border-radius:14px;padding:18px}
+.dl{display:grid;grid-template-columns:160px 1fr;gap:5px 12px}
+.dl dt{color:var(--mut);font-size:12.5px}.dl dd{margin:0}
+.fotos{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.fotos img{width:140px;height:140px;object-fit:cover;border-radius:8px}
+.hide{display:none!important}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:10px;z-index:60}
+#printHead{display:none}
+@media print{
+  header,.filtros,.noprint,#tablaWrap{display:none!important}
+  #printHead{display:block;margin-bottom:10px}
+  body{background:#fff;font-size:12px}
+  main{padding:0;max-width:none}
+  .card,.kpi{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+  .grid{grid-template-columns:1fr 1fr}
+  .tbl{max-height:none;overflow:visible}
+  @page{size:letter;margin:12mm}
+}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>🩺 Panel de Supervisión · Servicio Médico</h1><div class="sub" id="hdrInfo">Sin datos cargados</div></div>
+  <div class="hbtns">
+    <input type="file" id="impFiles" accept=".json,application/json" multiple class="hide">
+    <button class="btn" id="btnImp">📥 Importar archivos de campo</button>
+    <button class="btn" id="btnPDF">🖨️ Reporte PDF</button>
+    <button class="btn" id="btnResp">💾 Exportar respaldo completo</button>
+    <button class="btn" id="btnCfg">⚙️</button>
+  </div>
+</header>
+
+<main>
+  <div id="printHead">
+    <h2 style="margin:0">Reporte de Servicio Médico</h2>
+    <div id="printPeriodo" style="color:#555"></div>
+  </div>
+
+  <div class="filtros">
+    <div><label>Periodo rápido</label><div class="quick" id="quick">
+      <button data-q="hoy">Hoy</button><button data-q="7">7 días</button><button data-q="30" class="on">30 días</button><button data-q="mes">Este mes</button><button data-q="todo">Todo</button></div></div>
+    <div><label>Desde</label><input type="date" id="fDesde"></div>
+    <div><label>Hasta</label><input type="date" id="fHasta"></div>
+    <div><label>Día específico</label><input type="date" id="fFecha"></div>
+    <div><label>Campo</label><select id="fCampo"></select></div>
+    <div><label>Tipo</label><select id="fTipo"><option value="">Todos</option><option value="consulta">Consultas</option><option value="accidente">Accidentes</option><option value="incapacidad">Incapacidades / pases</option></select></div>
+    <div><label>Nivel</label><select id="fNivel"><option value="">Todos</option><option value="1">1 · Leve</option><option value="2">2 · Moderado</option><option value="3">3 · Grave</option><option value="4">4 · Crítico</option></select></div>
+    <div><label>Departamento</label><select id="fDepto"></select></div>
+    <div><button class="btn sec sm" id="btnLimpiarF">Limpiar filtros</button></div>
+  </div>
+
+  <div id="sinDatos" class="card empty hide">
+    <div style="font-size:40px">📂</div>
+    <p><b>Aún no hay información.</b><br>Importa los archivos JSON que envían el doctor y la enfermera desde la app de captura de cada campo.</p>
+    <button class="btn" onclick="$('impFiles').click()">📥 Importar archivos</button>
+  </div>
+
+  <div id="contenido">
+    <div class="kpis" id="kpis"></div>
+
+    <div class="sec-title">⏱️ Tiempo de respuesta (reporte → atención)</div>
+    <div class="grid">
+      <div class="card"><h3>Tiempo promedio de respuesta por campo</h3><div class="desc">Minutos desde que se reporta hasta que se atiende. Línea roja = meta.</div><div class="chart" id="chRespCampo"></div><div class="insight" id="inRespCampo"></div></div>
+      <div class="card"><h3>Tendencia del tiempo de respuesta</h3><div class="desc">Promedio diario vs meta.</div><div class="chart" id="chRespTend"></div></div>
+      <div class="card"><h3>Distribución de tiempos de respuesta</h3><div class="desc">Cuántas atenciones cayeron en cada rango.</div><div class="chart" id="chRespDist"></div></div>
+      <div class="card"><h3>Tiempo de respuesta por nivel de gravedad</h3><div class="desc">Los niveles 3 y 4 deben atenderse más rápido.</div><div class="chart" id="chRespNivel"></div></div>
+    </div>
+
+    <div class="sec-title">📍 Campos con más reportes</div>
+    <div class="grid">
+      <div class="card"><h3>Atenciones por campo y tipo</h3><div class="desc">Ordenado del campo con más reportes al de menos.</div><div class="chart" id="chCampoTipo"></div><div class="legend" id="lgTipo"></div><div class="insight" id="inCampo"></div></div>
+      <div class="card"><h3>Accidentes de trabajo por campo: periodo actual vs anterior</h3><div class="desc" id="descComp">Comparativo contra el periodo inmediato anterior de la misma duración.</div><div class="chart" id="chAccComp"></div><div class="legend"><span><i style="background:#94a3b8"></i>Periodo anterior</span><span><i style="background:var(--a)"></i>Periodo actual</span></div><div class="insight" id="inAccComp"></div></div>
+      <div class="card"><h3>Tendencia mensual de accidentes por campo</h3><div class="desc">Últimos 6 meses (no depende del filtro de fechas).</div><div class="chart" id="chAccMes"></div><div class="legend" id="lgAccMes"></div></div>
+      <div class="card"><h3>Ingenieros / personas que más reportan accidentes</h3><div class="desc">Quién reporta y cuántos accidentes.</div><div class="chart" id="chReporta"></div></div>
+    </div>
+
+    <div class="sec-title">🚦 Nivel de atención (gravedad)</div>
+    <div class="grid">
+      <div class="card"><h3>Frecuencia por nivel de atención</h3><div class="desc">1 Leve · 2 Moderado · 3 Grave · 4 Crítico</div><div class="chart" id="chNivel"></div><div class="insight" id="inNivel"></div></div>
+      <div class="card"><h3>Nivel de gravedad por campo</h3><div class="desc">Comparativo de la mezcla de niveles en cada campo.</div><div class="chart" id="chNivelCampo"></div><div class="legend" id="lgNivel"></div></div>
+    </div>
+
+    <div class="sec-title">🩹 Detalle clínico y de accidentes</div>
+    <div class="grid">
+      <div class="card"><h3>Principales diagnósticos</h3><div class="chart" id="chDx"></div></div>
+      <div class="card"><h3>Tipo de lesión (accidentes)</h3><div class="chart" id="chLesion"></div></div>
+      <div class="card"><h3>Parte del cuerpo afectada</h3><div class="chart" id="chParte"></div></div>
+      <div class="card"><h3>Causa / agente del accidente</h3><div class="chart" id="chCausa"></div></div>
+      <div class="card"><h3>Atenciones por departamento</h3><div class="chart" id="chDepto"></div></div>
+      <div class="card"><h3>Atenciones por personal médico</h3><div class="chart" id="chAtiende"></div></div>
+    </div>
+
+    <div class="sec-title">📄 Incapacidades y pases</div>
+    <div class="grid">
+      <div class="card"><h3>Incapacidades / pases vigentes</h3><div class="tbl" id="tbIncap"></div></div>
+      <div class="card"><h3>Pacientes recurrentes</h3><div class="desc">Trabajadores con 3 o más atenciones en el periodo.</div><div class="tbl" id="tbRecurrentes"></div></div>
+    </div>
+
+    <div id="tablaWrap">
+      <div class="sec-title">📋 Registros</div>
+      <div class="card">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><input id="tBuscar" placeholder="🔍 Buscar nombre, ficha, diagnóstico, quien reporta..." style="flex:1;min-width:220px;padding:8px;border:1px solid #cbd5e1;border-radius:7px"><span id="tCount" style="align-self:center;color:var(--mut);font-size:12px"></span></div>
+        <div class="tbl" id="tbRegistros"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="modal hide" id="modal"><div class="box" id="modalBox"></div></div>
+
+<script>
+/* ============ CONFIG ============ */
+const CAMPOS=['Palomas','El Milagro Uno','El Milagro Dos','El Milagro Tres','Santa Fe','Empaque'];
+const TIPOS=[{k:'consulta',n:'Consultas',c:'#0284c7'},{k:'accidente',n:'Accidentes',c:'#dc2626'},{k:'incapacidad',n:'Incapacidades / pases',c:'#7c3aed'}];
+const NIV_COL={1:'#16a34a',2:'#eab308',3:'#f97316',4:'#dc2626'};
+const NIV_LBL={1:'Leve',2:'Moderado',3:'Grave',4:'Crítico'};
+const TIPO_LBL={consulta:'Consulta',accidente:'Accidente',incapacidad:'Incapacidad / Pase'};
+const TIPO_CLS={consulta:'c',accidente:'a',incapacidad:'i'};
+const CFG_KEY='servicio_medico_panel_cfg_v1';
+let CFG={meta:15};try{CFG=Object.assign(CFG,JSON.parse(localStorage.getItem(CFG_KEY))||{});}catch(e){}
+
+/* ============ DB ============ */
+let db,ALL=[],PAC=[];
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open('servicio_medico_panel_db',1);r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('atenciones',{keyPath:'id'});d.createObjectStore('pacientes',{keyPath:'id'});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+const st=(s,m='readonly')=>db.transaction(s,m).objectStore(s);
+const dbAll=s=>new Promise((res,rej)=>{const q=st(s).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error);});
+function dbPutMany(s,arr){return new Promise((res,rej)=>{const t=db.transaction(s,'readwrite');const o=t.objectStore(s);arr.forEach(x=>o.put(x));t.oncomplete=()=>res();t.onerror=()=>rej(t.error);});}
+function dbClear(s){return new Promise((res,rej)=>{const q=st(s,'readwrite').clear();q.onsuccess=()=>res();q.onerror=()=>rej(q.error);});}
+
+/* ============ UTILS ============ */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+function dayKey(ts){const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function isoToTs(iso,end){const [y,m,d]=iso.split('-').map(Number);return end?new Date(y,m-1,d,23,59,59,999).getTime():new Date(y,m-1,d).getTime();}
+function fmtDT(ts){return ts?new Date(ts).toLocaleString('es-MX',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';}
+function fmtD(iso){if(!iso)return '—';const [y,m,d]=iso.split('-');return `${d}/${m}/${y}`;}
+function fmtMin(m){if(m==null||isNaN(m))return '—';if(m<60)return (Math.round(m*10)/10)+' min';const h=Math.floor(m/60);return h+' h '+Math.round(m%60)+' min';}
+const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+const median=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+function respCls(m){if(m==null)return '';return m<=CFG.meta?'ok':m<=CFG.meta*2?'warn':'bad';}
+function countBy(arr,fn){const m=new Map();arr.forEach(x=>{const k=fn(x);if(k===undefined||k===null||k==='')return;m.set(k,(m.get(k)||0)+1);});return [...m.entries()].sort((a,b)=>b[1]-a[1]);}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2800);}
+const pct=(a,b)=>b?Math.round(a/b*100):0;
+const resp=a=>(a.horaReporte&&a.horaAtencion)?Math.max(0,(a.horaAtencion-a.horaReporte)/60000):(a.tiempoRespuestaMin??null);
+
+/* ============ SVG CHARTS ============ */
+const SVGNS='http://www.w3.org/2000/svg';
+function svgWrap(w,h,inner){return `<svg viewBox="0 0 ${w} ${h}" xmlns="${SVGNS}" role="img">${inner}</svg>`;}
+function noData(el){el.innerHTML='<div class="empty" style="padding:24px">Sin datos en el periodo</div>';}
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const n=v/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p;}
+const trunc=(s,n)=>{s=String(s);return s.length>n?s.slice(0,n-1)+'…':s;};
+
+/* Barras horizontales: items [{label,value,color,txt}] */
+function hbar(el,items,o={}){
+  if(!items.length)return noData(el);
+  items=items.slice(0,o.max||10);
+  const W=560,rowH=28,lw=o.labelW||170,H=items.length*rowH+8,max=niceMax(Math.max(...items.map(i=>i.value),o.meta||0));
+  const bw=W-lw-70;let s='';
+  items.forEach((it,i)=>{const y=i*rowH+4,w=Math.max(2,it.value/max*bw);
+    s+=`<text x="${lw-8}" y="${y+rowH/2+4}" text-anchor="end" font-size="12" fill="#334155">${esc(trunc(it.label,26))}<title>${esc(it.label)}</title></text>`;
+    s+=`<rect x="${lw}" y="${y+4}" width="${w}" height="${rowH-10}" rx="3" fill="${it.color||o.color||'#0f766e'}"><title>${esc(it.label)}: ${esc(it.txt||it.value)}</title></rect>`;
+    s+=`<text x="${lw+w+6}" y="${y+rowH/2+4}" font-size="12" font-weight="700" fill="#0f172a">${esc(it.txt??it.value)}</text>`;});
+  if(o.meta){const x=lw+o.meta/max*bw;s+=`<line x1="${x}" x2="${x}" y1="0" y2="${H}" stroke="#dc2626" stroke-dasharray="4 3" stroke-width="1.5"/>`;}
+  el.innerHTML=svgWrap(W,H,s);
+}
+/* Barras verticales */
+function vbar(el,items,o={}){
+  if(!items.length||items.every(i=>!i.value))return noData(el);
+  const W=560,H=240,pl=40,pb=40,pt=18,cw=W-pl-10,ch=H-pb-pt,max=niceMax(Math.max(...items.map(i=>i.value),o.meta||0));
+  const bw=cw/items.length;let s=axisY(pl,pt,cw,ch,max);
+  items.forEach((it,i)=>{const h=it.value/max*ch,x=pl+i*bw+bw*.18,w=bw*.64,y=pt+ch-h;
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(h,0)}" rx="3" fill="${it.color||'#0f766e'}"><title>${esc(it.label)}: ${esc(it.txt??it.value)}</title></rect>`;
+    s+=`<text x="${x+w/2}" y="${y-5}" text-anchor="middle" font-size="12" font-weight="700">${esc(it.txt??it.value)}</text>`;
+    s+=`<text x="${x+w/2}" y="${H-pb+16}" text-anchor="middle" font-size="11.5" fill="#334155">${esc(trunc(it.label,14))}</text>`;
+    if(it.sub)s+=`<text x="${x+w/2}" y="${H-pb+30}" text-anchor="middle" font-size="10.5" fill="#64748b">${esc(it.sub)}</text>`;});
+  if(o.meta)s+=metaLine(pl,cw,pt,ch,max,o.meta);
+  el.innerHTML=svgWrap(W,H,s);
+}
+function axisY(pl,pt,cw,ch,max){let s='';for(let i=0;i<=4;i++){const v=max*i/4,y=pt+ch-ch*i/4;s+=`<line x1="${pl}" x2="${pl+cw}" y1="${y}" y2="${y}" stroke="#e2e8f0"/><text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="10.5" fill="#64748b">${Math.round(v*10)/10}</text>`;}return s;}
+function metaLine(pl,cw,pt,ch,max,meta){const y=pt+ch-meta/max*ch;return `<line x1="${pl}" x2="${pl+cw}" y1="${y}" y2="${y}" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="5 4"/><text x="${pl+cw-2}" y="${y-4}" text-anchor="end" font-size="10.5" fill="#dc2626" font-weight="700">Meta ${meta} min</text>`;}
+/* Barras agrupadas: cats [], series [{name,color,values}] */
+function grouped(el,cats,series,o={}){
+  if(!cats.length||series.every(s=>s.values.every(v=>!v)))return noData(el);
+  const W=560,H=250,pl=34,pb=44,pt=16,cw=W-pl-8,ch=H-pb-pt,max=niceMax(Math.max(...series.flatMap(s=>s.values)));
+  const gw=cw/cats.length,bw=gw*.78/series.length;let s=axisY(pl,pt,cw,ch,max);
+  cats.forEach((c,i)=>{series.forEach((se,j)=>{const v=se.values[i]||0,h=v/max*ch,x=pl+i*gw+gw*.11+j*bw,y=pt+ch-h;
+      s+=`<rect x="${x}" y="${y}" width="${bw-2}" height="${h}" rx="2" fill="${se.color}"><title>${esc(c)} · ${esc(se.name)}: ${v}</title></rect>`;
+      if(v)s+=`<text x="${x+(bw-2)/2}" y="${y-3}" text-anchor="middle" font-size="10.5" font-weight="700">${v}</text>`;});
+    s+=`<text x="${pl+i*gw+gw/2}" y="${H-pb+15}" text-anchor="middle" font-size="11" fill="#334155">${esc(trunc(c,14))}</text>`;
+    if(o.sub&&o.sub[i])s+=`<text x="${pl+i*gw+gw/2}" y="${H-pb+29}" text-anchor="middle" font-size="10.5" font-weight="700" fill="${o.sub[i].c}">${esc(o.sub[i].t)}</text>`;});
+  el.innerHTML=svgWrap(W,H,s);
+}
+/* Barras horizontales apiladas */
+function stackedH(el,cats,series,o={}){
+  const tot=cats.map((_,i)=>series.reduce((s,se)=>s+(se.values[i]||0),0));
+  if(!cats.length||tot.every(t=>!t))return noData(el);
+  const W=560,rowH=30,lw=120,H=cats.length*rowH+8,bw=W-lw-50;
+  const max=o.pct?100:niceMax(Math.max(...tot));let s='';
+  cats.forEach((c,i)=>{const y=i*rowH+4;let x=lw;
+    s+=`<text x="${lw-8}" y="${y+rowH/2+4}" text-anchor="end" font-size="12" fill="#334155">${esc(trunc(c,16))}</text>`;
+    series.forEach(se=>{const v=se.values[i]||0;if(!v)return;const val=o.pct?v/tot[i]*100:v;const w=val/max*bw;
+      s+=`<rect x="${x}" y="${y+4}" width="${w}" height="${rowH-10}" fill="${se.color}"><title>${esc(c)} · ${esc(se.name)}: ${v}${o.pct?' ('+Math.round(val)+'%)':''}</title></rect>`;
+      if(w>22)s+=`<text x="${x+w/2}" y="${y+rowH/2+4}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">${o.pct?Math.round(val)+'%':v}</text>`;x+=w;});
+    s+=`<text x="${x+6}" y="${y+rowH/2+4}" font-size="12" font-weight="700">${tot[i]}</text>`;});
+  el.innerHTML=svgWrap(W,H,s);
+}
+/* Líneas: labels [], series [{name,color,values(null permitido)}] */
+function lines(el,labels,series,o={}){
+  const all=series.flatMap(s=>s.values).filter(v=>v!=null);
+  if(!labels.length||!all.length)return noData(el);
+  const W=560,H=240,pl=40,pb=36,pt=16,cw=W-pl-14,ch=H-pb-pt,max=niceMax(Math.max(...all,o.meta||0));
+  const xs=i=>pl+(labels.length===1?cw/2:i*cw/(labels.length-1));let s=axisY(pl,pt,cw,ch,max);
+  const step=Math.ceil(labels.length/8);
+  labels.forEach((l,i)=>{if(i%step===0||i===labels.length-1)s+=`<text x="${xs(i)}" y="${H-pb+16}" text-anchor="middle" font-size="10.5" fill="#64748b">${esc(l)}</text>`;});
+  if(o.meta)s+=metaLine(pl,cw,pt,ch,max,o.meta);
+  series.forEach(se=>{let d='',pen=false;se.values.forEach((v,i)=>{if(v==null){pen=false;return;}const y=pt+ch-v/max*ch;d+=(pen?'L':'M')+xs(i)+' '+y+' ';pen=true;});
+    s+=`<path d="${d}" fill="none" stroke="${se.color}" stroke-width="2.4" stroke-linejoin="round"/>`;
+    se.values.forEach((v,i)=>{if(v==null)return;const y=pt+ch-v/max*ch;s+=`<circle cx="${xs(i)}" cy="${y}" r="3.2" fill="${se.color}"><title>${esc(labels[i])} · ${esc(se.name)}: ${o.fmt?o.fmt(v):v}</title></circle>`;});});
+  el.innerHTML=svgWrap(W,H,s);
+}
+const CAMPO_COL=['#0f766e','#0284c7','#7c3aed','#db2777','#ea580c','#65a30d','#475569','#0891b2'];
+function campoColor(c){const i=CAMPOS.indexOf(c);return CAMPO_COL[(i<0?CAMPOS.length+c.length:i)%CAMPO_COL.length];}
+
+/* ============ FILTROS ============ */
+let quick='30';
+function setQuick(q){
+  quick=q;document.querySelectorAll('#quick button').forEach(b=>b.classList.toggle('on',b.dataset.q===q));
+  const t=new Date(),iso=d=>dayKey(d.getTime());$('fFecha').value='';
+  if(q==='hoy'){$('fDesde').value=iso(t);$('fHasta').value=iso(t);}
+  else if(q==='7'||q==='30'){const d=new Date();d.setDate(d.getDate()-(+q-1));$('fDesde').value=iso(d);$('fHasta').value=iso(t);}
+  else if(q==='mes'){$('fDesde').value=iso(new Date(t.getFullYear(),t.getMonth(),1));$('fHasta').value=iso(t);}
+  else{$('fDesde').value='';$('fHasta').value='';}
+  render();
+}
+document.querySelectorAll('#quick button').forEach(b=>b.onclick=()=>setQuick(b.dataset.q));
+function rango(){
+  if($('fFecha').value)return {d:isoToTs($('fFecha').value),h:isoToTs($('fFecha').value,1)};
+  return {d:$('fDesde').value?isoToTs($('fDesde').value):null,h:$('fHasta').value?isoToTs($('fHasta').value,1):null};
+}
+function filtrar(ignorarFechas){
+  const r=rango(),c=$('fCampo').value,t=$('fTipo').value,n=$('fNivel').value,dp=$('fDepto').value;
+  return ALL.filter(a=>(ignorarFechas||((!r.d||a.horaAtencion>=r.d)&&(!r.h||a.horaAtencion<=r.h)))&&(!c||a.campo===c)&&(!t||a.tipo===t)&&(!n||String(a.nivel)===n)&&(!dp||a.departamento===dp));
+}
+['fDesde','fHasta'].forEach(i=>$(i).onchange=()=>{$('fFecha').value='';document.querySelectorAll('#quick button').forEach(b=>b.classList.remove('on'));render();});
+$('fFecha').onchange=()=>{document.querySelectorAll('#quick button').forEach(b=>b.classList.remove('on'));render();};
+['fCampo','fTipo','fNivel','fDepto'].forEach(i=>$(i).onchange=render);
+$('btnLimpiarF').onclick=()=>{['fCampo','fTipo','fNivel','fDepto'].forEach(i=>$(i).value='');setQuick('30');};
+$('tBuscar').oninput=()=>renderTabla(filtrar());
+
+function fillFiltros(){
+  const campos=[...new Set(CAMPOS.concat(ALL.map(a=>a.campo).filter(Boolean)))];
+  const v1=$('fCampo').value;$('fCampo').innerHTML='<option value="">Todos</option>'+campos.map(c=>`<option>${esc(c)}</option>`).join('');$('fCampo').value=v1;
+  const deps=[...new Set(ALL.map(a=>a.departamento).filter(Boolean))].sort();
+  const v2=$('fDepto').value;$('fDepto').innerHTML='<option value="">Todos</option>'+deps.map(c=>`<option>${esc(c)}</option>`).join('');$('fDepto').value=v2;
+}
+
+/* ============ RENDER ============ */
+function render(){
+  const hay=ALL.length>0;
+  $('sinDatos').classList.toggle('hide',hay);$('contenido').classList.toggle('hide',!hay);
+  const camposFuente=[...new Set(ALL.map(a=>a.campo))].length;
+  $('hdrInfo').textContent=hay?`${ALL.length} atenciones · ${PAC.length} fichas · ${camposFuente} campo(s) · última atención ${fmtDT(Math.max(...ALL.map(a=>a.horaAtencion||0)))}`:'Sin datos cargados';
+  if(!hay)return;
+  const F=filtrar();
+  const r=rango();
+  $('printPeriodo').textContent=`Periodo: ${r.d?fmtD(dayKey(r.d)):'inicio'} a ${r.h?fmtD(dayKey(r.h)):'hoy'}${$('fCampo').value?' · Campo: '+$('fCampo').value:' · Todos los campos'} · Generado ${fmtDT(Date.now())}`;
+  renderKpis(F);renderResp(F);renderCampos(F);renderNiveles(F);renderClinico(F);renderIncap();renderRecurrentes(F);renderTabla(F);
+}
+
+function renderKpis(F){
+  const rs=F.map(resp).filter(v=>v!=null);const pr=avg(rs);const dentro=rs.filter(v=>v<=CFG.meta).length;
+  const cons=F.filter(a=>a.tipo==='consulta').length,acc=F.filter(a=>a.tipo==='accidente'),inc=F.filter(a=>a.tipo==='incapacidad');
+  const porCampo=countBy(F,a=>a.campo);const accCampo=countBy(acc,a=>a.campo);
+  const niv=countBy(F,a=>a.nivel);
+  const diasInc=inc.reduce((s,a)=>s+(+a.dias||0),0);
+  const vig=ALL.filter(a=>a.tipo==='incapacidad'&&a.estado!=='concluida').length;
+  const graves=F.filter(a=>a.nivel>=3).length;
+  const pctMeta=pct(dentro,rs.length);
+  const K=[
+    {l:'Total de atenciones',v:F.length,s:`${cons} consultas · ${acc.length} accidentes · ${inc.length} pases/incap.`},
+    {l:'Tiempo de respuesta promedio',v:fmtMin(pr),s:`Mediana ${fmtMin(median(rs))} · meta ≤ ${CFG.meta} min`,c:respCls(pr)},
+    {l:'% atendido dentro de meta',v:rs.length?pctMeta+'%':'—',s:`${dentro} de ${rs.length} atenciones`,c:!rs.length?'':pctMeta>=90?'ok':pctMeta>=75?'warn':'bad'},
+    {l:'Campo con más reportes',v:porCampo[0]?porCampo[0][0]:'—',s:porCampo[0]?`${porCampo[0][1]} atenciones (${pct(porCampo[0][1],F.length)}%)`:'',sm:1},
+    {l:'Campo con más accidentes',v:accCampo[0]?accCampo[0][0]:'—',s:accCampo[0]?`${accCampo[0][1]} accidentes (${pct(accCampo[0][1],acc.length)}%)`:'Sin accidentes',c:accCampo[0]?'bad':'ok',sm:1},
+    {l:'Nivel más frecuente',v:niv[0]?`Nivel ${niv[0][0]}`:'—',s:niv[0]?`${NIV_LBL[niv[0][0]]} · ${niv[0][1]} casos (${pct(niv[0][1],F.length)}%)`:''},
+    {l:'Casos graves / críticos',v:graves,s:`Niveles 3 y 4 · ${pct(graves,F.length)}% del total`,c:graves?'warn':'ok'},
+    {l:'Días de incapacidad',v:diasInc,s:`${vig} incapacidad(es)/pase(s) vigente(s)`},
+  ];
+  $('kpis').innerHTML=K.map(k=>`<div class="kpi ${k.c||''}"><div class="l">${k.l}</div><div class="v" ${k.sm?'style="font-size:20px"':''}>${esc(k.v)}</div><div class="s">${esc(k.s||'')}</div></div>`).join('');
+}
+
+function renderResp(F){
+  const conR=F.filter(a=>resp(a)!=null);
+  // por campo
+  const campos=[...new Set(conR.map(a=>a.campo))];
+  const items=campos.map(c=>{const v=avg(conR.filter(a=>a.campo===c).map(resp));return {label:c,value:Math.round(v*10)/10,txt:fmtMin(v),color:v<=CFG.meta?'#16a34a':v<=CFG.meta*2?'#d97706':'#dc2626'};}).sort((a,b)=>b.value-a.value);
+  hbar($('chRespCampo'),items,{meta:CFG.meta,labelW:130});
+  const fuera=items.filter(i=>i.value>CFG.meta);
+  $('inRespCampo').innerHTML=!items.length?'Sin datos.':fuera.length?`⚠️ <b>${fuera.length}</b> campo(s) por encima de la meta de ${CFG.meta} min. El más lento es <b>${esc(items[0].label)}</b> con ${items[0].txt} en promedio.`:`✅ Todos los campos están dentro de la meta de ${CFG.meta} min. El más rápido es <b>${esc(items[items.length-1].label)}</b> (${items[items.length-1].txt}).`;
+  // tendencia diaria (o semanal si es largo)
+  const r=rango();let d0=r.d||Math.min(...conR.map(a=>a.horaAtencion)),d1=r.h||Date.now();
+  const dias=Math.ceil((d1-d0)/864e5);const semanal=dias>45;
+  const keyOf=ts=>{if(!semanal)return dayKey(ts);const d=new Date(ts);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return dayKey(d.getTime());};
+  const labels=[];const keys=[];
+  if(conR.length&&isFinite(d0)){const c=new Date(d0);c.setHours(0,0,0,0);if(semanal)c.setDate(c.getDate()-((c.getDay()+6)%7));
+    while(c.getTime()<=d1&&labels.length<400){const k=dayKey(c.getTime());keys.push(k);labels.push((semanal?'Sem ':'')+k.slice(8)+'/'+k.slice(5,7));c.setDate(c.getDate()+(semanal?7:1));}}
+  const g={};conR.forEach(a=>{(g[keyOf(a.horaAtencion)]=g[keyOf(a.horaAtencion)]||[]).push(resp(a));});
+  lines($('chRespTend'),labels,[{name:'Promedio',color:'#0f766e',values:keys.map(k=>g[k]?Math.round(avg(g[k])*10)/10:null)}],{meta:CFG.meta,fmt:fmtMin});
+  // distribución
+  const M=CFG.meta,B=[[`0–${M} min`,0,M,'#16a34a'],[`${M}–${M*2} min`,M,M*2,'#eab308'],[`${M*2}–60 min`,M*2,60,'#f97316'],['1–2 h',60,120,'#dc2626'],['> 2 h',120,1e9,'#7f1d1d']];
+  if(M*2>=60)B.splice(2,1);
+  const rs=conR.map(resp);
+  vbar($('chRespDist'),B.map(b=>{const n=rs.filter(v=>v>b[1]-(b[1]===0?1:0)&&v<=b[2]).length;return {label:b[0],value:n,color:b[3],sub:rs.length?pct(n,rs.length)+'%':''};}));
+  // por nivel
+  vbar($('chRespNivel'),[1,2,3,4].map(n=>{const v=avg(conR.filter(a=>+a.nivel===n).map(resp));return {label:'Nivel '+n,sub:NIV_LBL[n],value:v?Math.round(v*10)/10:0,txt:v==null?'—':fmtMin(v),color:NIV_COL[n]};}),{meta:CFG.meta});
+}
+
+function renderCampos(F){
+  const tot=countBy(F,a=>a.campo);const cats=tot.map(t=>t[0]);
+  stackedH($('chCampoTipo'),cats,TIPOS.map(t=>({name:t.n,color:t.c,values:cats.map(c=>F.filter(a=>a.campo===c&&a.tipo===t.k).length)})));
+  $('lgTipo').innerHTML=TIPOS.map(t=>`<span><i style="background:${t.c}"></i>${t.n}</span>`).join('');
+  $('inCampo').innerHTML=tot.length?`📌 <b>${esc(tot[0][0])}</b> es el campo con más reportes: ${tot[0][1]} atenciones (${pct(tot[0][1],F.length)}% del total)${tot[1]?`, seguido de <b>${esc(tot[1][0])}</b> con ${tot[1][1]}`:''}.`:'Sin datos.';
+  // comparativo periodo actual vs anterior (accidentes)
+  const r=rango();let d=r.d,h=r.h||Date.now();if(!d){h=Date.now();d=h-30*864e5;}
+  const len=h-d+1,pd=d-len,ph=d-1;
+  const base=filtrar(true).filter(a=>a.tipo==='accidente');
+  const act=base.filter(a=>a.horaAtencion>=d&&a.horaAtencion<=h),ant=base.filter(a=>a.horaAtencion>=pd&&a.horaAtencion<=ph);
+  const cc=[...new Set(CAMPOS.filter(c=>!$('fCampo').value||c===$('fCampo').value).concat(act.map(a=>a.campo),ant.map(a=>a.campo)))];
+  const va=cc.map(c=>act.filter(a=>a.campo===c).length),vp=cc.map(c=>ant.filter(a=>a.campo===c).length);
+  $('descComp').textContent=`Actual: ${fmtD(dayKey(d))} – ${fmtD(dayKey(h))} · Anterior: ${fmtD(dayKey(pd))} – ${fmtD(dayKey(ph))}`;
+  const sub=cc.map((c,i)=>{const dif=va[i]-vp[i];return dif>0?{t:'▲ +'+dif,c:'#dc2626'}:dif<0?{t:'▼ '+dif,c:'#16a34a'}:{t:'=',c:'#64748b'};});
+  grouped($('chAccComp'),cc,[{name:'Periodo anterior',color:'#94a3b8',values:vp},{name:'Periodo actual',color:'#dc2626',values:va}],{sub});
+  const ta=act.length,tp=ant.length;
+  $('inAccComp').innerHTML=`Accidentes en el periodo: <b>${ta}</b> vs <b>${tp}</b> en el anterior ${tp?`(${ta>=tp?'▲':'▼'} ${Math.abs(pct(ta-tp,tp))}%)`:''}. ${ta>tp?'⚠️ Aumentaron los accidentes.':ta<tp?'✅ Disminuyeron los accidentes.':'Sin cambio.'}`;
+  // tendencia mensual 6 meses
+  const now=new Date();const meses=[];for(let i=5;i>=0;i--){const m=new Date(now.getFullYear(),now.getMonth()-i,1);meses.push({k:m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0'),l:m.toLocaleString('es-MX',{month:'short'})+' '+String(m.getFullYear()).slice(2)});}
+  const ccm=[...new Set(base.map(a=>a.campo))];
+  lines($('chAccMes'),meses.map(m=>m.l),ccm.map(c=>({name:c,color:campoColor(c),values:meses.map(m=>base.filter(a=>a.campo===c&&dayKey(a.horaAtencion).slice(0,7)===m.k).length)})));
+  $('lgAccMes').innerHTML=ccm.map(c=>`<span><i style="background:${campoColor(c)}"></i>${esc(c)}</span>`).join('');
+  // quién reporta
+  const acc=F.filter(a=>a.tipo==='accidente');
+  hbar($('chReporta'),countBy(acc,a=>a.reportaNombre?a.reportaNombre+(a.reportaTipo?' ('+a.reportaTipo.split(' ')[0]+')':''):null).map(([l,v])=>({label:l,value:v,color:'#b91c1c'})),{labelW:210});
+}
+
+function renderNiveles(F){
+  const tot=F.length;
+  vbar($('chNivel'),[1,2,3,4].map(n=>{const v=F.filter(a=>+a.nivel===n).length;return {label:'Nivel '+n,sub:NIV_LBL[n]+(tot?' · '+pct(v,tot)+'%':''),value:v,color:NIV_COL[n]};}));
+  const niv=countBy(F,a=>a.nivel);
+  const acc=F.filter(a=>a.tipo==='accidente');const nivAcc=countBy(acc,a=>a.nivel);
+  $('inNivel').innerHTML=niv.length?`📌 El nivel más frecuente es <b>Nivel ${niv[0][0]} (${NIV_LBL[niv[0][0]]})</b> con ${niv[0][1]} casos (${pct(niv[0][1],tot)}%).${nivAcc.length?` En accidentes de trabajo predomina el <b>Nivel ${nivAcc[0][0]}</b> (${nivAcc[0][1]} de ${acc.length}).`:''}`:'Sin datos.';
+  const cats=countBy(F,a=>a.campo).map(t=>t[0]);
+  stackedH($('chNivelCampo'),cats,[1,2,3,4].map(n=>({name:'Nivel '+n,color:NIV_COL[n],values:cats.map(c=>F.filter(a=>a.campo===c&&+a.nivel===n).length)})),{pct:true});
+  $('lgNivel').innerHTML=[1,2,3,4].map(n=>`<span><i style="background:${NIV_COL[n]}"></i>${n} · ${NIV_LBL[n]}</span>`).join('');
+}
+
+function renderClinico(F){
+  const acc=F.filter(a=>a.tipo==='accidente');
+  const toI=(arr,col)=>arr.map(([l,v])=>({label:l,value:v,color:col}));
+  hbar($('chDx'),toI(countBy(F,a=>a.diagnostico?a.diagnostico.trim():null),'#0284c7'));
+  hbar($('chLesion'),toI(countBy(acc,a=>a.tipoLesion),'#dc2626'));
+  hbar($('chParte'),toI(countBy(acc,a=>a.parteCuerpo),'#ea580c'));
+  hbar($('chCausa'),toI(countBy(acc,a=>a.causa),'#9333ea'));
+  hbar($('chDepto'),toI(countBy(F,a=>a.departamento),'#0f766e'));
+  hbar($('chAtiende'),toI(countBy(F,a=>a.atiende?a.atiende+(a.atiendeRol?' · '+a.atiendeRol:''):null),'#475569'),{labelW:200});
+}
+
+function renderIncap(){
+  const hoy=dayKey(Date.now());const c=$('fCampo').value;
+  const v=ALL.filter(a=>a.tipo==='incapacidad'&&a.estado!=='concluida'&&(!c||a.campo===c)).sort((a,b)=>(a.fechaFin||'').localeCompare(b.fechaFin||''));
+  $('tbIncap').innerHTML=v.length?`<table><thead><tr><th>Trabajador</th><th>Campo</th><th>Tipo</th><th>Días</th><th>Termina</th></tr></thead><tbody>${v.map(a=>`<tr data-id="${a.id}"><td><b>${esc(a.nombre)}</b><br><span style="color:var(--mut)">Ficha ${esc(a.numEmpleado||'—')}</span></td><td>${esc(a.campo)}</td><td>${esc(a.incTipo)}</td><td>${a.dias}</td><td>${fmtD(a.fechaFin)}${a.fechaFin&&a.fechaFin<hoy?' <span class="pill bad">Vencida</span>':''}</td></tr>`).join('')}</tbody></table>`:'<div class="empty" style="padding:20px">Sin incapacidades vigentes</div>';
+  $('tbIncap').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>detalle(tr.dataset.id));
+}
+function renderRecurrentes(F){
+  const g={};F.forEach(a=>{const k=a.numEmpleado||norm(a.nombre);(g[k]=g[k]||[]).push(a);});
+  const rec=Object.values(g).filter(x=>x.length>=3).sort((a,b)=>b.length-a.length);
+  $('tbRecurrentes').innerHTML=rec.length?`<table><thead><tr><th>Trabajador</th><th>Campo</th><th>Atenciones</th><th>Accidentes</th><th>Dx más común</th></tr></thead><tbody>${rec.map(x=>{const a=x[0];const dx=countBy(x,y=>y.diagnostico);return `<tr data-ficha="${esc(a.numEmpleado||'')}" data-nom="${esc(a.nombre)}"><td><b>${esc(a.nombre)}</b><br><span style="color:var(--mut)">Ficha ${esc(a.numEmpleado||'—')}</span></td><td>${esc(a.campo)}</td><td>${x.length}</td><td>${x.filter(y=>y.tipo==='accidente').length}</td><td>${esc(dx[0]?dx[0][0]:'—')}</td></tr>`;}).join('')}</tbody></table>`:'<div class="empty" style="padding:20px">Ningún trabajador con 3+ atenciones</div>';
+  $('tbRecurrentes').querySelectorAll('tr[data-nom]').forEach(tr=>tr.onclick=()=>{$('tBuscar').value=tr.dataset.ficha||tr.dataset.nom;renderTabla(filtrar());$('tablaWrap').scrollIntoView({behavior:'smooth'});});
+}
+function renderTabla(F){
+  const q=norm($('tBuscar').value);
+  const arr=F.filter(a=>!q||norm([a.nombre,a.numEmpleado,a.diagnostico,a.tipoLesion,a.reportaNombre,a.atiende,a.campo,a.departamento].join(' ')).includes(q)).sort((a,b)=>b.horaAtencion-a.horaAtencion);
+  $('tCount').textContent=arr.length+' registro(s)';
+  $('tbRegistros').innerHTML=arr.length?`<table><thead><tr><th>Fecha atención</th><th>Tipo</th><th>Nivel</th><th>Trabajador</th><th>Campo / Depto</th><th>Diagnóstico / lesión</th><th>Reportó</th><th>T. respuesta</th><th>Atendió</th></tr></thead><tbody>${arr.slice(0,1000).map(a=>{const r=resp(a);return `<tr data-id="${a.id}"><td>${fmtDT(a.horaAtencion)}</td><td><span class="pill ${TIPO_CLS[a.tipo]}">${TIPO_LBL[a.tipo]}</span></td><td><span class="pill n${a.nivel}">${a.nivel} · ${NIV_LBL[a.nivel]||''}</span></td><td><b>${esc(a.nombre)}</b><br><span style="color:var(--mut)">Ficha ${esc(a.numEmpleado||'—')}</span></td><td>${esc(a.campo)}<br><span style="color:var(--mut)">${esc(a.departamento||'')}</span></td><td>${esc(a.diagnostico||a.tipoLesion||a.incTipo||'')}</td><td>${esc(a.reportaNombre||'')}<br><span style="color:var(--mut)">${esc(a.reportaTipo||'')}</span></td><td><span class="pill ${respCls(r)}">${fmtMin(r)}</span></td><td>${esc(a.atiende||'')}<br><span style="color:var(--mut)">${esc(a.atiendeRol||'')}</span></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty">Sin registros</div>';
+  $('tbRegistros').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>detalle(tr.dataset.id));
+}
+
+/* ============ DETALLE ============ */
+function dlist(rows){return '<dl class="dl">'+rows.filter(r=>r[1]!==undefined&&r[1]!==null&&r[1]!==''&&r[1]!=='—').map(r=>`<dt>${r[0]}</dt><dd>${r[2]?r[1]:esc(r[1])}</dd>`).join('')+'</dl>';}
+function detalle(id){
+  const a=ALL.find(x=>x.id===id);if(!a)return;const s=a.signos||{};const r=resp(a);
+  const p=PAC.find(x=>x.id===a.pacienteId)||{};
+  const sv=[s.ta&&'T/A '+s.ta,s.fc&&'FC '+s.fc,s.temp&&'T '+s.temp+'°C',s.spo2&&'SpO₂ '+s.spo2+'%',s.fr&&'FR '+s.fr,s.glucosa&&'Glu '+s.glucosa].filter(Boolean).join(' · ');
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">${TIPO_LBL[a.tipo]} <span class="pill n${a.nivel}">Nivel ${a.nivel} · ${NIV_LBL[a.nivel]}</span></h2><button class="btn sec sm" onclick="$('modal').classList.add('hide')">✕</button></div><br>`;
+  h+=dlist([['Trabajador',a.nombre],['N° de ficha',a.numEmpleado],['Campo',a.campo],['Departamento',a.departamento],['Puesto',a.puesto],
+    ['Alergias',p.alergias?`<b style="color:#b91c1c">${esc(p.alergias)}</b>`:'',1],['Padecimientos',p.cronicas],['Tipo de sangre',p.tipoSangre],['NSS',p.nss],
+    ['Atendió',[a.atiende,a.atiendeRol].filter(Boolean).join(' · ')],['Reportó',[a.reportaNombre,a.reportaTipo].filter(Boolean).join(' · ')],['Medio',a.reportaMedio],
+    ['Hora reporte',fmtDT(a.horaReporte)],['Hora atención',fmtDT(a.horaAtencion)],['Tiempo de respuesta',`<span class="pill ${respCls(r)}">${fmtMin(r)}</span>`,1],
+    ['Motivo / hallazgos',a.motivo],['Signos vitales',sv],['Diagnóstico',a.diagnostico],['Tratamiento',a.tratamiento],['Destino',a.destino],
+    ['Hora accidente',a.horaAccidente?fmtDT(a.horaAccidente):''],['Lugar',a.lugar],['Actividad',a.actividad],['Tipo de lesión',a.tipoLesion],['Parte del cuerpo',a.parteCuerpo],['Causa',a.causa],['Descripción',a.descripcion],['Testigos',a.testigos],['EPP',a.epp],
+    ['Traslado',a.tipo==='accidente'?(a.traslado?'Sí':'No'):''],['ST-7',a.tipo==='accidente'?(a.st7?'Sí':'No'):''],
+    ['Documento',a.incTipo],['Folio',a.folio],['Días',a.tipo==='incapacidad'?a.dias:''],['Periodo',a.fechaInicio?fmtD(a.fechaInicio)+' al '+fmtD(a.fechaFin):''],['Seguimiento',a.fechaSeguimiento?fmtD(a.fechaSeguimiento):''],['Estado',a.estado],['Regresó',a.fechaRegreso?fmtD(a.fechaRegreso):''],
+    ['Notas',a.notas]]);
+  if(a.fotos&&a.fotos.length)h+=`<div class="fotos">${a.fotos.map(f=>`<a href="${f}" target="_blank"><img src="${f}"></a>`).join('')}</div>`;
+  $('modalBox').innerHTML=h;$('modal').classList.remove('hide');
+}
+$('modal').onclick=e=>{if(e.target.id==='modal')$('modal').classList.add('hide');};
+
+/* ============ IMPORT / EXPORT ============ */
+$('btnImp').onclick=()=>$('impFiles').click();
+$('impFiles').onchange=async e=>{
+  let nA=0,nP=0,act=0,bad=0;const ids=new Map(ALL.map(a=>[a.id,a]));const pids=new Map(PAC.map(p=>[p.id,p]));
+  const putA=[],putP=[];
+  for(const f of e.target.files){
+    try{const d=JSON.parse(await f.text());if(!Array.isArray(d.atenciones))throw 0;
+      for(const a of d.atenciones){if(!a||!a.id)continue;const prev=ids.get(a.id);
+        if(!prev){ids.set(a.id,a);putA.push(a);nA++;}
+        else if(JSON.stringify({...prev,exportado:0,tsExportado:0})!==JSON.stringify({...a,exportado:0,tsExportado:0})){ids.set(a.id,a);putA.push(a);act++;}}
+      for(const p of d.pacientes||[]){if(!p||!p.id)continue;const prev=pids.get(p.id);if(!prev){nP++;pids.set(p.id,p);putP.push(p);}else if((p.actualizado||0)>(prev.actualizado||0)){pids.set(p.id,p);putP.push(p);}}
+    }catch(err){bad++;}
+  }
+  if(putA.length)await dbPutMany('atenciones',putA);if(putP.length)await dbPutMany('pacientes',putP);
+  ALL=[...ids.values()];PAC=[...pids.values()];
+  fillFiltros();render();
+  toast(`✅ ${nA} atenciones nuevas, ${act} actualizadas, ${nP} fichas nuevas${bad?` · ${bad} archivo(s) no válido(s)`:''}`);
+  e.target.value='';
+};
+$('btnResp').onclick=()=>{const b=new Blob([JSON.stringify({app:'servicio-medico',tipo:'respaldo-panel',version:1,exportado:Date.now(),atenciones:ALL,pacientes:PAC})],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`respaldo_panel_medico_${dayKey(Date.now())}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);};
+$('btnPDF').onclick=()=>{render();setTimeout(()=>window.print(),150);};
+$('btnCfg').onclick=()=>{
+  $('modalBox').innerHTML=`<h2 style="margin-top:0">⚙️ Configuración</h2>
+  <label style="font-size:12px;color:var(--mut);font-weight:700">Meta de tiempo de respuesta (minutos)</label><br>
+  <input type="number" id="cfgMeta" min="1" value="${CFG.meta}" style="padding:8px;border:1px solid #cbd5e1;border-radius:7px;width:120px;margin:6px 0 14px">
+  <p style="font-size:12.5px;color:var(--mut)">Las atenciones con tiempo menor o igual a la meta se marcan en verde; hasta el doble, en amarillo; más, en rojo.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="cfgOk">Guardar</button><button class="btn sec" onclick="$('modal').classList.add('hide')">Cancelar</button><span style="flex:1"></span><button class="btn bad" id="cfgDel">🗑️ Borrar todos los datos del panel</button></div>`;
+  $('modal').classList.remove('hide');
+  $('cfgOk').onclick=()=>{CFG.meta=Math.max(1,+$('cfgMeta').value||15);try{localStorage.setItem(CFG_KEY,JSON.stringify(CFG));}catch(e){}$('modal').classList.add('hide');render();};
+  $('cfgDel').onclick=async()=>{if(!confirm('¿Borrar todos los datos del panel? Exporta un respaldo antes.'))return;if(prompt('Escribe BORRAR para confirmar')!=='BORRAR')return;await dbClear('atenciones');await dbClear('pacientes');ALL=[];PAC=[];$('modal').classList.add('hide');fillFiltros();render();};
+};
+
+/* ============ INICIO ============ */
+(async()=>{
+  try{db=await openDB();ALL=await dbAll('atenciones');PAC=await dbAll('pacientes');}catch(e){alert('No se pudo abrir la base de datos: '+e);}
+  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
+  fillFiltros();setQuick('30');
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

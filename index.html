@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Servicio Médico</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{
+  --pri:#0f766e;--pri2:#115e59;--pri-soft:#ccfbf1;
+  --bg:#f1f5f9;--card:#fff;--txt:#0f172a;--mut:#64748b;--line:#e2e8f0;
+  --n1:#16a34a;--n2:#ca8a04;--n3:#ea580c;--n4:#dc2626;
+  --ok:#16a34a;--warn:#d97706;--bad:#dc2626;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px}
+.top{position:sticky;top:0;z-index:20;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+header{background:var(--pri);color:#fff;padding:12px 16px 10px}
+header h1{margin:0;font-size:18px;display:flex;align-items:center;gap:8px}
+header .sub{font-size:12px;opacity:.85;margin-top:2px}
+nav{display:flex;background:var(--pri2);overflow-x:auto}
+nav button{flex:1;min-width:84px;background:none;border:0;color:#cbe9e5;padding:11px 6px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;cursor:pointer}
+nav button.on{color:#fff;border-bottom-color:#5eead4}
+main{padding:14px 14px 90px;max-width:760px;margin:0 auto}
+.card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.card h2{font-size:15px;margin:0 0 10px;color:var(--pri2)}
+.card h3{font-size:13px;margin:14px 0 8px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+label{display:block;font-size:12px;color:var(--mut);margin:8px 0 3px;font-weight:600}
+input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;background:#fff;color:var(--txt);font-family:inherit}
+textarea{min-height:64px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--pri);border-color:transparent}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row>*,.row3>*{min-width:0}
+html,body{overflow-x:hidden}
+input[type=datetime-local]{min-width:0;font-size:14px;padding:9px 6px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:420px){.row3{grid-template-columns:1fr 1fr}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:9px;padding:11px 14px;font-size:14px;font-weight:700;cursor:pointer;background:var(--pri);color:#fff}
+.btn.sec{background:#e2e8f0;color:var(--txt)}
+.btn.warn{background:var(--warn)}
+.btn.bad{background:var(--bad)}
+.btn.sm{padding:7px 10px;font-size:12px;border-radius:7px}
+.btn.block{width:100%}
+.tipos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tipo{border:2px solid var(--line);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;background:#fff;font-weight:700;font-size:13px}
+.tipo .ic{font-size:24px;display:block;margin-bottom:3px}
+.tipo.on{border-color:var(--pri);background:var(--pri-soft);color:var(--pri2)}
+.niveles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.nivel{border:2px solid var(--line);border-radius:10px;padding:8px 2px;text-align:center;cursor:pointer;background:#fff}
+.nivel b{display:block;font-size:20px}
+.nivel span{font-size:10.5px;color:var(--mut);line-height:1.15;display:block}
+.nivel.on[data-n="1"]{border-color:var(--n1);background:#dcfce7}
+.nivel.on[data-n="2"]{border-color:var(--n2);background:#fef9c3}
+.nivel.on[data-n="3"]{border-color:var(--n3);background:#ffedd5}
+.nivel.on[data-n="4"]{border-color:var(--n4);background:#fee2e2}
+.nivel-desc{font-size:12px;color:var(--mut);margin-top:6px;min-height:16px}
+.timebox{display:flex;flex-direction:column;gap:5px}
+.timebox .btn{align-self:flex-start}
+.resp{margin-top:8px;padding:9px 11px;border-radius:8px;font-weight:700;font-size:14px;background:#f1f5f9}
+.resp.ok{background:#dcfce7;color:#166534}.resp.warn{background:#fef3c7;color:#92400e}.resp.bad{background:#fee2e2;color:#991b1b}
+.hide{display:none!important}
+.fotos{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.fotos div{position:relative}
+.fotos img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.fotos button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--bad);color:#fff;font-weight:700;cursor:pointer}
+.aviso{background:#ecfeff;border:1px solid #a5f3fc;color:#155e75;padding:8px 10px;border-radius:8px;font-size:13px;margin-top:8px}
+.aviso.alerta{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fff;cursor:pointer}
+.item .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.item .nm{font-weight:700}
+.item .meta{font-size:12px;color:var(--mut);margin-top:3px}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#e2e8f0;color:#334155;white-space:nowrap}
+.pill.n1{background:#dcfce7;color:#166534}.pill.n2{background:#fef9c3;color:#854d0e}.pill.n3{background:#ffedd5;color:#9a3412}.pill.n4{background:#fee2e2;color:#991b1b}
+.pill.c{background:#e0f2fe;color:#075985}.pill.a{background:#fee2e2;color:#991b1b}.pill.i{background:#ede9fe;color:#5b21b6}
+.pill.pend{background:#fef3c7;color:#92400e}.pill.env{background:#dcfce7;color:#166534}
+.search{margin-bottom:10px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--card);border-radius:10px;padding:10px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.stat b{font-size:22px;display:block;color:var(--pri2)}
+.stat span{font-size:11px;color:var(--mut)}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.modal .box{background:#fff;width:100%;max-width:760px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px}
+@media(min-width:700px){.modal{align-items:center}.modal .box{border-radius:16px}}
+.dl{display:grid;grid-template-columns:140px 1fr;gap:4px 10px;font-size:14px}
+.dl dt{color:var(--mut);font-size:12.5px}
+.dl dd{margin:0;word-break:break-word}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:10px;z-index:60;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.25);max-width:90vw}
+.fab{position:fixed;right:16px;bottom:16px;z-index:30}
+.chk{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:14px}
+.chk input{width:auto}
+.vit input{text-align:center}
+.empty{text-align:center;color:var(--mut);padding:24px 8px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="top"><header>
+  <h1>🩺 Servicio Médico</h1>
+  <div class="sub" id="hdrSub">Registro de atenciones · sin conexión</div>
+</header>
+<nav>
+  <button data-tab="registro" class="on">➕ Registrar</button>
+  <button data-tab="historial">📋 Historial</button>
+  <button data-tab="pacientes">👤 Fichas</button>
+  <button data-tab="incap">🗓️ Incap.</button>
+  <button data-tab="respaldo">💾 Enviar</button>
+</nav></div>
+
+<main>
+<!-- ================== REGISTRO ================== -->
+<section id="tab-registro">
+  <div class="card">
+    <h2>Datos del consultorio</h2>
+    <div class="row">
+      <div><label>Campo</label><select id="cfgCampo"></select></div>
+      <div><label>Rol</label><select id="cfgRol"><option>Doctor(a)</option><option>Enfermero(a)</option></select></div>
+    </div>
+    <label>Nombre de quien atiende</label><input id="cfgAtiende" placeholder="Nombre del doctor o enfermera" list="dlAtiende">
+  </div>
+
+  <div class="card">
+    <h2>Tipo de atención</h2>
+    <div class="tipos" id="tipos">
+      <div class="tipo on" data-t="consulta"><span class="ic">🩺</span>Consulta</div>
+      <div class="tipo" data-t="accidente"><span class="ic">🚑</span>Accidente de trabajo</div>
+      <div class="tipo" data-t="incapacidad"><span class="ic">📄</span>Incapacidad / Pase</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Paciente</h2>
+    <div class="row">
+      <div><label>N° de ficha *</label><input id="pNum" inputmode="numeric" placeholder="Ficha de trabajo" list="dlNums"></div>
+      <div><label>Nombre completo *</label><input id="pNombre" placeholder="Nombre y apellidos" list="dlNombres" autocomplete="off"></div>
+    </div>
+    <div class="row">
+      <div><label>Departamento</label><select id="pDepto"></select></div>
+      <div><label>Puesto / actividad</label><input id="pPuesto" placeholder="Ej. Cortador"></div>
+    </div>
+    <div id="fichaAviso" class="aviso hide"></div>
+    <button class="btn sec sm" style="margin-top:10px" id="btnVerFicha" type="button">👤 Ver / completar ficha del paciente</button>
+  </div>
+
+  <div class="card">
+    <h2>Nivel de atención (según gravedad)</h2>
+    <div class="niveles" id="niveles">
+      <div class="nivel" data-n="1"><b>1</b><span>Leve</span></div>
+      <div class="nivel" data-n="2"><b>2</b><span>Moderado</span></div>
+      <div class="nivel" data-n="3"><b>3</b><span>Grave</span></div>
+      <div class="nivel" data-n="4"><b>4</b><span>Crítico</span></div>
+    </div>
+    <div class="nivel-desc" id="nivelDesc">Selecciona el nivel según la gravedad.</div>
+  </div>
+
+  <div class="card">
+    <h2>Reporte y tiempo de atención</h2>
+    <div class="row">
+      <div><label>¿Quién reporta?</label>
+        <select id="rTipo">
+          <option>Ingeniero de campo</option><option>Supervisor / Mayordomo</option><option>El propio trabajador</option><option>Compañero de trabajo</option><option>Vigilancia</option><option>Otro</option>
+        </select></div>
+      <div><label>Nombre de quien reporta</label><input id="rNombre" list="dlReporta" placeholder="Nombre"></div>
+    </div>
+    <label>Medio del reporte</label>
+    <select id="rMedio"><option>Radio</option><option>Llamada</option><option>WhatsApp</option><option>En persona</option><option>Otro</option></select>
+    <div class="row">
+      <div><label>Hora del reporte</label><div class="timebox"><input type="datetime-local" id="hReporte"><button class="btn sec sm" type="button" data-now="hReporte">Ahora</button></div></div>
+      <div><label>Hora de atención</label><div class="timebox"><input type="datetime-local" id="hAtencion"><button class="btn sec sm" type="button" data-now="hAtencion">Ahora</button></div></div>
+    </div>
+    <div class="resp" id="respBox">Tiempo de respuesta: —</div>
+  </div>
+
+  <!-- CONSULTA / ACCIDENTE: evaluación clínica -->
+  <div class="card" id="secClinica">
+    <h2 id="clinTitle">Evaluación clínica</h2>
+    <label id="lblMotivo">Motivo de consulta / síntomas</label>
+    <textarea id="cMotivo" placeholder="Describe lo que refiere el paciente"></textarea>
+    <h3>Signos vitales</h3>
+    <div class="row3 vit">
+      <div><label>T/A (mmHg)</label><input id="vTA" placeholder="120/80"></div>
+      <div><label>F.C. (lpm)</label><input id="vFC" inputmode="numeric"></div>
+      <div><label>Temp (°C)</label><input id="vTemp" inputmode="decimal"></div>
+      <div><label>SpO₂ (%)</label><input id="vSpo2" inputmode="numeric"></div>
+      <div><label>F.R. (rpm)</label><input id="vFR" inputmode="numeric"></div>
+      <div><label>Glucosa (mg/dL)</label><input id="vGlu" inputmode="numeric"></div>
+    </div>
+    <label>Diagnóstico / impresión diagnóstica</label>
+    <input id="cDx" list="dlDx" placeholder="Ej. Golpe de calor, Lumbalgia...">
+    <label>Tratamiento / medicamento administrado</label>
+    <textarea id="cTx" placeholder="Medicamento, dosis, curación, etc."></textarea>
+    <label>Destino del paciente</label>
+    <select id="cDestino">
+      <option>Regresa a sus labores</option><option>Reposo en consultorio / observación</option><option>Enviado a casa</option><option>Enviado a IMSS</option><option>Traslado a hospital / ambulancia</option>
+    </select>
+  </div>
+
+  <!-- ACCIDENTE -->
+  <div class="card hide" id="secAccidente">
+    <h2>Datos del accidente</h2>
+    <div class="row">
+      <div><label>Fecha y hora del accidente</label><input type="datetime-local" id="aHora"></div>
+      <div><label>Lugar exacto (lote, sección, área)</label><input id="aLugar" placeholder="Ej. Lote 14, invernadero 3"></div>
+    </div>
+    <label>Actividad que realizaba</label>
+    <input id="aActividad" placeholder="Ej. Cosecha, aplicación, carga">
+    <div class="row">
+      <div><label>Tipo de lesión</label><select id="aLesion"></select></div>
+      <div><label>Parte del cuerpo afectada</label><select id="aParte"></select></div>
+    </div>
+    <label>Causa / agente del accidente</label>
+    <select id="aCausa"></select>
+    <label>Descripción de cómo ocurrió</label>
+    <textarea id="aDesc" placeholder="Relato breve de los hechos"></textarea>
+    <label>Testigos</label>
+    <input id="aTestigos" placeholder="Nombres separados por coma">
+    <label>Equipo de protección que portaba</label>
+    <input id="aEPP" placeholder="Ej. Guantes, botas, lentes">
+    <label class="chk"><input type="checkbox" id="aTraslado"> Requirió traslado fuera del campo</label>
+    <label class="chk"><input type="checkbox" id="aST7"> Se inicia trámite ST-7 (riesgo de trabajo IMSS)</label>
+    <h3>Fotos (lesión / lugar)</h3>
+    <input type="file" id="aFotoIn" accept="image/*" capture="environment" class="hide">
+    <button class="btn sec sm" type="button" id="btnFoto">📷 Agregar foto</button>
+    <div class="fotos" id="aFotos"></div>
+  </div>
+
+  <!-- INCAPACIDAD / PASE -->
+  <div class="card hide" id="secIncap">
+    <h2>Incapacidad / Pase médico</h2>
+    <label>Tipo de documento</label>
+    <select id="iTipo">
+      <option>Pase médico interno (permiso)</option><option>Pase a IMSS</option><option>Incapacidad IMSS - Enfermedad general</option><option>Incapacidad IMSS - Riesgo de trabajo</option><option>Incapacidad IMSS - Maternidad</option>
+    </select>
+    <div class="row">
+      <div><label>Folio</label><input id="iFolio" placeholder="Folio del documento"></div>
+      <div><label>Días</label><input id="iDias" type="number" min="0" value="1"></div>
+    </div>
+    <div class="row">
+      <div><label>Fecha de inicio</label><input type="date" id="iInicio"></div>
+      <div><label>Fecha de término</label><input type="date" id="iFin" readonly style="background:#f8fafc"></div>
+    </div>
+    <label>Motivo / diagnóstico</label>
+    <input id="iMotivo" list="dlDx">
+    <label>Fecha de seguimiento / cita</label>
+    <input type="date" id="iSeguimiento">
+  </div>
+
+  <div class="card">
+    <label>Notas adicionales</label>
+    <textarea id="notas"></textarea>
+    <div id="alertaNivel" class="aviso alerta hide" style="margin-top:10px"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn sec" type="button" id="btnLimpiar">Limpiar</button>
+      <button class="btn block" type="button" id="btnGuardar">💾 Guardar atención</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================== HISTORIAL ================== -->
+<section id="tab-historial" class="hide">
+  <div class="stats">
+    <div class="stat"><b id="sHoy">0</b><span>Atenciones hoy</span></div>
+    <div class="stat"><b id="sAcc">0</b><span>Accidentes (30 días)</span></div>
+    <div class="stat"><b id="sResp">—</b><span>Resp. promedio hoy</span></div>
+  </div>
+  <div class="card">
+    <div class="row">
+      <input class="search" id="hBuscar" placeholder="🔍 Buscar nombre, ficha, diagnóstico...">
+      <select id="hTipo"><option value="">Todos los tipos</option><option value="consulta">Consultas</option><option value="accidente">Accidentes</option><option value="incapacidad">Incapacidades / pases</option></select>
+    </div>
+    <div id="hResumenPend" class="aviso hide"></div>
+    <div id="hLista"></div>
+  </div>
+</section>
+
+<!-- ================== PACIENTES ================== -->
+<section id="tab-pacientes" class="hide">
+  <div class="card">
+    <div style="display:flex;gap:8px">
+      <input id="pBuscar" placeholder="🔍 Buscar paciente">
+      <button class="btn" type="button" id="btnNuevaFicha">➕ Ficha</button>
+    </div>
+    <div id="pLista" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- ================== INCAPACIDADES ================== -->
+<section id="tab-incap" class="hide">
+  <div class="card">
+    <h2>Incapacidades y pases vigentes</h2>
+    <div id="incActivas"></div>
+  </div>
+  <div class="card">
+    <h2>Concluidas (últimos 60 días)</h2>
+    <div id="incConcluidas"></div>
+  </div>
+</section>
+
+<!-- ================== RESPALDO ================== -->
+<section id="tab-respaldo" class="hide">
+  <div class="card">
+    <h2>Enviar al panel de supervisión</h2>
+    <p style="font-size:14px;color:var(--mut);margin-top:0">Los registros se guardan solo en este teléfono. Exporta el archivo y envíalo (WhatsApp, correo o USB) a quien maneja el panel.</p>
+    <div id="expResumen" class="aviso"></div>
+    <div style="display:grid;gap:8px;margin-top:12px">
+      <button class="btn block" id="btnExpPend">📤 Exportar solo pendientes de enviar</button>
+      <button class="btn sec block" id="btnExpTodo">📦 Exportar todo (atenciones + fichas)</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Restaurar / cambiar de teléfono</h2>
+    <p style="font-size:14px;color:var(--mut);margin-top:0">Importa un respaldo JSON exportado desde esta app. Los registros repetidos no se duplican.</p>
+    <input type="file" id="impFile" accept=".json,application/json">
+  </div>
+  <div class="card">
+    <h2>Catálogos</h2>
+    <p style="font-size:13px;color:var(--mut);margin-top:0">Diagnósticos, ingenieros que reportan y personal que atiende se van aprendiendo de lo que capturas.</p>
+    <button class="btn bad sm" id="btnBorrarTodo">🗑️ Borrar todos los datos de este teléfono</button>
+  </div>
+</section>
+</main>
+
+<datalist id="dlNombres"></datalist><datalist id="dlNums"></datalist><datalist id="dlReporta"></datalist><datalist id="dlAtiende"></datalist><datalist id="dlDx"></datalist>
+
+<!-- Modal genérico -->
+<div class="modal hide" id="modal"><div class="box" id="modalBox"></div></div>
+
+<script>
+/* ========= CATÁLOGOS ========= */
+const CAMPOS=['Palomas','El Milagro Uno','El Milagro Dos','El Milagro Tres','Santa Fe','Empaque'];
+const DEPTOS=['Almacén General','Empaque','Labores','Mantenimiento','Plagas','Previsión Social','RH','Producción','Riego','Nóminas','Inocuidad','Otro'];
+const NIVELES={
+  1:'Nivel 1 · Leve: lesión o malestar menor, primeros auxilios; regresa a sus labores.',
+  2:'Nivel 2 · Moderado: requiere tratamiento u observación en consultorio; puede requerir pase.',
+  3:'Nivel 3 · Grave: requiere envío a IMSS / clínica; probable incapacidad.',
+  4:'Nivel 4 · Crítico: riesgo a la vida o pérdida de función; traslado inmediato en ambulancia.'
+};
+const LESIONES=['Herida cortante','Contusión / golpe','Esguince / torcedura','Fractura','Quemadura','Intoxicación por agroquímico','Picadura / mordedura','Cuerpo extraño en ojo','Golpe de calor / deshidratación','Lumbalgia / lesión por esfuerzo','Amputación','Descarga eléctrica','Otro'];
+const PARTES=['Cabeza','Ojos','Cara','Cuello','Hombro','Brazo / antebrazo','Mano','Dedos de la mano','Tórax','Espalda','Abdomen','Cadera','Pierna / rodilla','Tobillo','Pie','Dedos del pie','Múltiples','Sistémico (todo el cuerpo)'];
+const CAUSAS=['Herramienta manual','Maquinaria / equipo','Vehículo / tractor','Caída al mismo nivel','Caída de altura','Objeto que cae','Sobreesfuerzo / levantar carga','Agroquímico','Exposición a calor','Animal / insecto','Riña','Superficie resbalosa','Otro'];
+const DX_BASE=['Cefalea','Gastroenteritis','Infección respiratoria','Golpe de calor','Deshidratación','Lumbalgia','Hipertensión descontrolada','Hiperglucemia','Dermatitis','Conjuntivitis','Herida cortante','Contusión','Esguince','Intoxicación por agroquímico','Picadura de alacrán','Crisis de ansiedad','Dolor abdominal','Infección urinaria','Faringitis','Mareo / lipotimia'];
+const META_MIN=15; // meta de tiempo de respuesta (min)
+
+/* ========= INDEXEDDB ========= */
+const DB_NAME='servicio_medico_db';let db;
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('atenciones'))d.createObjectStore('atenciones',{keyPath:'id'});if(!d.objectStoreNames.contains('pacientes'))d.createObjectStore('pacientes',{keyPath:'id'});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+const st=(s,m='readonly')=>db.transaction(s,m).objectStore(s);
+const dbAll=s=>new Promise((res,rej)=>{const q=st(s).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error);});
+const dbPut=(s,o)=>new Promise((res,rej)=>{const q=st(s,'readwrite').put(o);q.onsuccess=()=>res();q.onerror=()=>rej(q.error);});
+const dbDel=(s,k)=>new Promise((res,rej)=>{const q=st(s,'readwrite').delete(k);q.onsuccess=()=>res();q.onerror=()=>rej(q.error);});
+const dbClear=s=>new Promise((res,rej)=>{const q=st(s,'readwrite').clear();q.onsuccess=()=>res();q.onerror=()=>rej(q.error);});
+
+/* ========= UTILIDADES ========= */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=p=>p+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+function toLocalInput(ts){const d=new Date(ts);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16);}
+function fromLocalInput(v){return v?new Date(v).getTime():null;}
+function todayISO(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10);}
+function fmtDT(ts){if(!ts)return '—';return new Date(ts).toLocaleString('es-MX',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function fmtD(iso){if(!iso)return '—';const [y,m,d]=iso.split('-');return `${d}/${m}/${y}`;}
+function fmtMin(m){if(m==null||isNaN(m))return '—';if(m<60)return Math.round(m)+' min';const h=Math.floor(m/60),r=Math.round(m%60);return h+' h '+r+' min';}
+function addDays(iso,n){const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function toast(msg,ms=2600){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),ms);}
+const TIPO_LBL={consulta:'Consulta',accidente:'Accidente',incapacidad:'Incapacidad / Pase'};
+const TIPO_CLS={consulta:'c',accidente:'a',incapacidad:'i'};
+function respClass(m){if(m==null)return '';return m<=META_MIN?'ok':m<=META_MIN*2?'warn':'bad';}
+function fillSelect(el,arr,ph){el.innerHTML=(ph?`<option value="">${ph}</option>`:'')+arr.map(x=>`<option>${esc(x)}</option>`).join('');}
+function download(name,obj){const b=new Blob([JSON.stringify(obj)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}
+function compressImg(file,max=1100,q=.72){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;const s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',q));};img.onerror=rej;img.src=r.result;};r.onerror=rej;r.readAsDataURL(file);});}
+
+/* ========= ESTADO ========= */
+let ATENCIONES=[],PACIENTES=[];
+let tipoSel='consulta',nivelSel=null,fotosAcc=[];
+const CFG_KEY='servicio_medico_cfg_v1';
+function loadCfg(){try{return JSON.parse(localStorage.getItem(CFG_KEY))||{};}catch(e){return{};}}
+function saveCfg(){try{localStorage.setItem(CFG_KEY,JSON.stringify({campo:$('cfgCampo').value,atiende:$('cfgAtiende').value,rol:$('cfgRol').value}));}catch(e){}}
+
+/* ========= TABS ========= */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='tab-'+b.dataset.tab));
+  ({historial:renderHistorial,pacientes:renderPacientes,incap:renderIncap,respaldo:renderResumenExport})[b.dataset.tab]?.();
+  window.scrollTo(0,0);
+});
+
+/* ========= FORMULARIO ========= */
+function setTipo(t){
+  tipoSel=t;
+  document.querySelectorAll('.tipo').forEach(x=>x.classList.toggle('on',x.dataset.t===t));
+  $('secAccidente').classList.toggle('hide',t!=='accidente');
+  $('secIncap').classList.toggle('hide',t!=='incapacidad');
+  $('secClinica').classList.toggle('hide',t==='incapacidad');
+  $('clinTitle').textContent=t==='accidente'?'Evaluación de la lesión':'Evaluación clínica';
+  $('lblMotivo').textContent=t==='accidente'?'Hallazgos / lo que refiere el lesionado':'Motivo de consulta / síntomas';
+  if(t==='accidente'&&$('rTipo').value==='El propio trabajador')$('rTipo').value='Ingeniero de campo';
+  checkNivelAlerta();
+}
+document.querySelectorAll('.tipo').forEach(x=>x.onclick=()=>setTipo(x.dataset.t));
+function setNivel(n){
+  nivelSel=n;
+  document.querySelectorAll('.nivel').forEach(x=>x.classList.toggle('on',+x.dataset.n===n));
+  $('nivelDesc').textContent=n?NIVELES[n]:'Selecciona el nivel según la gravedad.';
+  if(n===3&&$('cDestino').value==='Regresa a sus labores')$('cDestino').value='Enviado a IMSS';
+  if(n===4)$('cDestino').value='Traslado a hospital / ambulancia';
+  checkNivelAlerta();
+}
+document.querySelectorAll('.nivel').forEach(x=>x.onclick=()=>setNivel(+x.dataset.n));
+function checkNivelAlerta(){
+  const el=$('alertaNivel');
+  if(tipoSel==='accidente'&&nivelSel>=3){el.innerHTML='⚠️ Accidente nivel '+nivelSel+': avisa de inmediato a RH / Seguridad e inicia el trámite ST-7 ante el IMSS.';el.classList.remove('hide');}
+  else el.classList.add('hide');
+}
+document.querySelectorAll('[data-now]').forEach(b=>b.onclick=()=>{$(b.dataset.now).value=toLocalInput(Date.now());updResp();});
+function updResp(){
+  const a=fromLocalInput($('hReporte').value),b=fromLocalInput($('hAtencion').value),box=$('respBox');
+  box.className='resp';
+  if(!a||!b){box.textContent='Tiempo de respuesta: —';return;}
+  const m=(b-a)/60000;
+  if(m<0){box.textContent='⚠️ La hora de atención es anterior a la del reporte';box.classList.add('bad');return;}
+  box.textContent=`Tiempo de respuesta: ${fmtMin(m)}  (meta ≤ ${META_MIN} min)`;box.classList.add(respClass(m));
+}
+['hReporte','hAtencion'].forEach(i=>$(i).addEventListener('input',updResp));
+function updFin(){const i=$('iInicio').value,d=+$('iDias').value||0;$('iFin').value=i?addDays(i,Math.max(d-1,0)):'';}
+['iInicio','iDias'].forEach(i=>$(i).addEventListener('input',updFin));
+
+$('btnFoto').onclick=()=>$('aFotoIn').click();
+$('aFotoIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{fotosAcc.push(await compressImg(f));renderFotos();}catch(err){toast('No se pudo leer la foto');}e.target.value='';};
+function renderFotos(){$('aFotos').innerHTML=fotosAcc.map((s,i)=>`<div><img src="${s}"><button type="button" data-i="${i}">×</button></div>`).join('');$('aFotos').querySelectorAll('button').forEach(b=>b.onclick=()=>{fotosAcc.splice(+b.dataset.i,1);renderFotos();});}
+
+/* Autocompletar paciente desde ficha */
+function findPaciente(num,nombre){
+  if(num){const p=PACIENTES.find(x=>String(x.numEmpleado||'')===String(num).trim());if(p)return p;}
+  if(nombre){const n=norm(nombre);return PACIENTES.find(x=>norm(x.nombre)===n);}
+  return null;
+}
+function onPacienteInput(src){
+  const p=findPaciente(src==='num'?$('pNum').value:'',src==='nom'?$('pNombre').value:'');
+  const av=$('fichaAviso');
+  if(!p){av.classList.add('hide');return;}
+  if(!$('pNombre').value)$('pNombre').value=p.nombre||'';
+  if(!$('pNum').value)$('pNum').value=p.numEmpleado||'';
+  if(!$('pDepto').value&&p.departamento)$('pDepto').value=p.departamento;
+  if(!$('pPuesto').value&&p.puesto)$('pPuesto').value=p.puesto;
+  const prev=ATENCIONES.filter(a=>a.pacienteId===p.id).sort((a,b)=>b.horaAtencion-a.horaAtencion);
+  let html=`✅ Ficha encontrada: <b>${esc(p.nombre)}</b>`;
+  const crit=[];if(p.alergias)crit.push('Alergias: '+esc(p.alergias));if(p.cronicas)crit.push('Padecimientos: '+esc(p.cronicas));if(p.tipoSangre)crit.push('Sangre: '+esc(p.tipoSangre));
+  if(crit.length)html+='<br><b style="color:#991b1b">'+crit.join(' · ')+'</b>';
+  if(prev.length)html+=`<br>${prev.length} atención(es) previa(s). Última: ${fmtDT(prev[0].horaAtencion)} — ${esc(TIPO_LBL[prev[0].tipo])}${prev[0].diagnostico?' ('+esc(prev[0].diagnostico)+')':''}`;
+  av.innerHTML=html;av.classList.remove('hide');av.classList.toggle('alerta',!!p.alergias);
+}
+$('pNum').addEventListener('change',()=>onPacienteInput('num'));
+$('pNombre').addEventListener('change',()=>onPacienteInput('nom'));
+$('btnVerFicha').onclick=()=>{
+  const p=findPaciente($('pNum').value,$('pNombre').value);
+  openFicha(p||{nombre:$('pNombre').value.trim(),numEmpleado:$('pNum').value.trim(),departamento:$('pDepto').value,puesto:$('pPuesto').value,campo:$('cfgCampo').value},()=>onPacienteInput('nom'));
+};
+
+function resetForm(keepTipo=true){
+  ['pNum','pNombre','pPuesto','rNombre','cMotivo','vTA','vFC','vTemp','vSpo2','vFR','vGlu','cDx','cTx','aLugar','aActividad','aDesc','aTestigos','aEPP','iFolio','iMotivo','iSeguimiento','notas'].forEach(i=>$(i).value='');
+  $('pDepto').value='';$('cDestino').selectedIndex=0;$('rTipo').selectedIndex=tipoSel==='accidente'?0:2;$('rMedio').selectedIndex=0;
+  $('aLesion').value='';$('aParte').value='';$('aCausa').value='';$('aTraslado').checked=false;$('aST7').checked=false;
+  $('iTipo').selectedIndex=0;$('iDias').value=1;
+  const now=toLocalInput(Date.now());$('hReporte').value=now;$('hAtencion').value=now;$('aHora').value=now;$('iInicio').value=todayISO();updFin();
+  fotosAcc=[];renderFotos();setNivel(null);$('fichaAviso').classList.add('hide');updResp();
+  if(!keepTipo)setTipo('consulta');
+}
+$('btnLimpiar').onclick=()=>{if(confirm('¿Limpiar el formulario?'))resetForm();};
+
+async function ensurePaciente(){
+  const nombre=$('pNombre').value.trim(),num=$('pNum').value.trim();
+  let p=findPaciente(num,nombre);
+  if(!p){p={id:uid('P'),nombre,numEmpleado:num,departamento:$('pDepto').value,puesto:$('pPuesto').value,campo:$('cfgCampo').value,creado:Date.now()};}
+  else{p={...p};if(!p.numEmpleado&&num)p.numEmpleado=num;if(!p.departamento&&$('pDepto').value)p.departamento=$('pDepto').value;if(!p.puesto&&$('pPuesto').value)p.puesto=$('pPuesto').value;if(!p.campo)p.campo=$('cfgCampo').value;}
+  p.actualizado=Date.now();p.exportado=false;
+  await dbPut('pacientes',p);
+  const i=PACIENTES.findIndex(x=>x.id===p.id);if(i>=0)PACIENTES[i]=p;else PACIENTES.push(p);
+  return p;
+}
+
+$('btnGuardar').onclick=async()=>{
+  const nombre=$('pNombre').value.trim();
+  if(!$('cfgCampo').value)return toast('Selecciona el campo');
+  if(!$('cfgAtiende').value.trim())return toast('Escribe quién atiende');
+  if(!$('pNum').value.trim())return toast('Captura el N° de ficha del trabajador');
+  if(!nombre)return toast('Escribe el nombre del paciente');
+  if(!nivelSel)return toast('Selecciona el nivel de atención (1 a 4)');
+  const hR=fromLocalInput($('hReporte').value),hA=fromLocalInput($('hAtencion').value);
+  if(!hR||!hA)return toast('Captura hora de reporte y de atención');
+  if(hA<hR)return toast('La hora de atención no puede ser antes del reporte');
+  if(tipoSel==='accidente'&&!$('aLesion').value)return toast('Selecciona el tipo de lesión');
+  if(tipoSel==='incapacidad'&&!$('iInicio').value)return toast('Captura la fecha de inicio');
+  const p=await ensurePaciente();
+  const r={
+    id:uid('MED'),tipo:tipoSel,campo:$('cfgCampo').value,atiende:$('cfgAtiende').value.trim(),atiendeRol:$('cfgRol').value,
+    pacienteId:p.id,numEmpleado:$('pNum').value.trim(),nombre,departamento:$('pDepto').value,puesto:$('pPuesto').value.trim(),
+    nivel:nivelSel,reportaTipo:$('rTipo').value,reportaNombre:$('rNombre').value.trim(),reportaMedio:$('rMedio').value,
+    horaReporte:hR,horaAtencion:hA,tiempoRespuestaMin:Math.round((hA-hR)/60000),
+    notas:$('notas').value.trim(),creado:Date.now(),exportado:false
+  };
+  if(tipoSel!=='incapacidad'){
+    Object.assign(r,{motivo:$('cMotivo').value.trim(),signos:{ta:$('vTA').value.trim(),fc:$('vFC').value.trim(),temp:$('vTemp').value.trim(),spo2:$('vSpo2').value.trim(),fr:$('vFR').value.trim(),glucosa:$('vGlu').value.trim()},
+      diagnostico:$('cDx').value.trim(),tratamiento:$('cTx').value.trim(),destino:$('cDestino').value});
+  }
+  if(tipoSel==='accidente'){
+    Object.assign(r,{horaAccidente:fromLocalInput($('aHora').value),lugar:$('aLugar').value.trim(),actividad:$('aActividad').value.trim(),
+      tipoLesion:$('aLesion').value,parteCuerpo:$('aParte').value,causa:$('aCausa').value,descripcion:$('aDesc').value.trim(),
+      testigos:$('aTestigos').value.trim(),epp:$('aEPP').value.trim(),traslado:$('aTraslado').checked,st7:$('aST7').checked,fotos:fotosAcc.slice()});
+  }
+  if(tipoSel==='incapacidad'){
+    Object.assign(r,{incTipo:$('iTipo').value,folio:$('iFolio').value.trim(),dias:+$('iDias').value||0,fechaInicio:$('iInicio').value,fechaFin:$('iFin').value,
+      diagnostico:$('iMotivo').value.trim(),fechaSeguimiento:$('iSeguimiento').value,estado:'activa'});
+  }
+  await dbPut('atenciones',r);ATENCIONES.push(r);
+  saveCfg();refreshDatalists();
+  if(navigator.vibrate)navigator.vibrate(60);
+  toast('✅ Atención guardada');
+  // Si fue accidente o consulta con envío a IMSS, sugerir capturar incapacidad
+  const sugerir=tipoSel!=='incapacidad'&&(r.destino==='Enviado a IMSS'||r.destino==='Enviado a casa'||nivelSel>=3);
+  const prevPac={num:r.numEmpleado,nombre:r.nombre,depto:r.departamento,puesto:r.puesto};
+  resetForm();
+  if(sugerir&&confirm('¿Deseas registrar ahora el pase / incapacidad de este paciente?')){
+    setTipo('incapacidad');$('pNum').value=prevPac.num;$('pNombre').value=prevPac.nombre;$('pDepto').value=prevPac.depto;$('pPuesto').value=prevPac.puesto;
+    if(r.tipo==='accidente')$('iTipo').value='Incapacidad IMSS - Riesgo de trabajo';
+    $('iMotivo').value=r.diagnostico||r.tipoLesion||'';setNivel(r.nivel);onPacienteInput('nom');
+  }
+  window.scrollTo(0,0);
+};
+
+/* ========= DATALISTS ========= */
+function refreshDatalists(){
+  const uniq=a=>[...new Set(a.filter(Boolean))].sort((x,y)=>x.localeCompare(y,'es'));
+  $('dlNombres').innerHTML=uniq(PACIENTES.map(p=>p.nombre)).map(x=>`<option value="${esc(x)}">`).join('');
+  $('dlNums').innerHTML=PACIENTES.filter(p=>p.numEmpleado).map(p=>`<option value="${esc(p.numEmpleado)}">${esc(p.nombre)}</option>`).join('');
+  $('dlReporta').innerHTML=uniq(ATENCIONES.map(a=>a.reportaNombre)).map(x=>`<option value="${esc(x)}">`).join('');
+  $('dlAtiende').innerHTML=uniq(ATENCIONES.map(a=>a.atiende)).map(x=>`<option value="${esc(x)}">`).join('');
+  $('dlDx').innerHTML=uniq(DX_BASE.concat(ATENCIONES.map(a=>a.diagnostico))).map(x=>`<option value="${esc(x)}">`).join('');
+}
+
+/* ========= HISTORIAL ========= */
+function renderHistorial(){
+  const hoy=todayISO();
+  const hoyArr=ATENCIONES.filter(a=>new Date(a.horaAtencion-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10)===hoy);
+  $('sHoy').textContent=hoyArr.length;
+  $('sAcc').textContent=ATENCIONES.filter(a=>a.tipo==='accidente'&&a.horaAtencion>Date.now()-30*864e5).length;
+  const rs=hoyArr.map(a=>a.tiempoRespuestaMin).filter(x=>x!=null);
+  $('sResp').textContent=rs.length?fmtMin(rs.reduce((s,x)=>s+x,0)/rs.length):'—';
+  const q=norm($('hBuscar').value),t=$('hTipo').value;
+  const arr=ATENCIONES.filter(a=>(!t||a.tipo===t)&&(!q||norm([a.nombre,a.numEmpleado,a.diagnostico,a.tipoLesion,a.reportaNombre,a.departamento].join(' ')).includes(q))).sort((a,b)=>b.horaAtencion-a.horaAtencion);
+  const pend=ATENCIONES.filter(a=>!a.exportado).length;
+  const rp=$('hResumenPend');rp.classList.toggle('hide',!pend);rp.innerHTML=`🟡 ${pend} registro(s) pendiente(s) de enviar al panel. Ve a la pestaña <b>Enviar</b>.`;
+  $('hLista').innerHTML=arr.length?arr.slice(0,300).map(itemHTML).join(''):'<div class="empty">Sin registros</div>';
+  $('hLista').querySelectorAll('.item').forEach(el=>el.onclick=()=>openDetalle(el.dataset.id));
+}
+function itemHTML(a){
+  return `<div class="item" data-id="${a.id}"><div class="top"><div><div class="nm">${esc(a.nombre)} ${a.numEmpleado?'<span style="color:var(--mut);font-weight:400">Ficha '+esc(a.numEmpleado)+'</span>':''}</div>
+  <div class="meta">${fmtDT(a.horaAtencion)} · ${esc(a.campo)}${a.departamento?' · '+esc(a.departamento):''}</div>
+  <div class="meta">${esc(a.diagnostico||a.tipoLesion||a.incTipo||a.motivo||'')}</div></div>
+  <div style="text-align:right;display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="pill ${TIPO_CLS[a.tipo]}">${TIPO_LBL[a.tipo]}</span><span class="pill n${a.nivel}">Nivel ${a.nivel}</span>
+  <span class="pill ${respClass(a.tiempoRespuestaMin)==='ok'?'env':respClass(a.tiempoRespuestaMin)==='warn'?'pend':'n4'}">⏱ ${fmtMin(a.tiempoRespuestaMin)}</span>
+  <span class="pill ${a.exportado?'env':'pend'}">${a.exportado?'✅ Enviado':'🟡 Pendiente'}</span></div></div></div>`;
+}
+$('hBuscar').oninput=renderHistorial;$('hTipo').onchange=renderHistorial;
+
+function dl(rows){return '<dl class="dl">'+rows.filter(r=>r[1]!==undefined&&r[1]!==null&&r[1]!=='').map(r=>`<dt>${r[0]}</dt><dd>${r[2]?r[1]:esc(r[1])}</dd>`).join('')+'</dl>';}
+function openModal(html){$('modalBox').innerHTML=html;$('modal').classList.remove('hide');}
+function closeModal(){$('modal').classList.add('hide');}
+$('modal').onclick=e=>{if(e.target.id==='modal')closeModal();};
+function openDetalle(id){
+  const a=ATENCIONES.find(x=>x.id===id);if(!a)return;
+  const s=a.signos||{};const sv=[s.ta&&'T/A '+s.ta,s.fc&&'FC '+s.fc,s.temp&&'T '+s.temp+'°C',s.spo2&&'SpO₂ '+s.spo2+'%',s.fr&&'FR '+s.fr,s.glucosa&&'Glu '+s.glucosa].filter(Boolean).join(' · ');
+  let h=`<h2 style="margin-top:0">${TIPO_LBL[a.tipo]} <span class="pill n${a.nivel}">Nivel ${a.nivel}</span></h2>`;
+  h+=dl([['Paciente',a.nombre],['N° de ficha',a.numEmpleado],['Campo',a.campo],['Departamento',a.departamento],['Puesto',a.puesto],['Atendió',[a.atiendeRol,a.atiende].filter(Boolean).join(' · ')],
+    ['Reportó',[a.reportaTipo,a.reportaNombre].filter(Boolean).join(' — ')],['Medio',a.reportaMedio],['Hora reporte',fmtDT(a.horaReporte)],['Hora atención',fmtDT(a.horaAtencion)],
+    ['Tiempo de respuesta',`<span class="pill ${respClass(a.tiempoRespuestaMin)==='ok'?'env':respClass(a.tiempoRespuestaMin)==='warn'?'pend':'n4'}">${fmtMin(a.tiempoRespuestaMin)}</span>`,1],
+    ['Motivo / hallazgos',a.motivo],['Signos vitales',sv],['Diagnóstico',a.diagnostico],['Tratamiento',a.tratamiento],['Destino',a.destino],
+    ['Hora accidente',a.horaAccidente?fmtDT(a.horaAccidente):''],['Lugar',a.lugar],['Actividad',a.actividad],['Tipo de lesión',a.tipoLesion],['Parte del cuerpo',a.parteCuerpo],['Causa',a.causa],['Descripción',a.descripcion],['Testigos',a.testigos],['EPP',a.epp],
+    ['Traslado',a.tipo==='accidente'?(a.traslado?'Sí':'No'):''],['ST-7',a.tipo==='accidente'?(a.st7?'Sí':'No'):''],
+    ['Documento',a.incTipo],['Folio',a.folio],['Días',a.tipo==='incapacidad'?a.dias:''],['Del',fmtD(a.fechaInicio)!=='—'?fmtD(a.fechaInicio)+' al '+fmtD(a.fechaFin):''],['Seguimiento',a.fechaSeguimiento?fmtD(a.fechaSeguimiento):''],['Estado',a.estado],['Regresó',a.fechaRegreso?fmtD(a.fechaRegreso):''],
+    ['Notas',a.notas]]);
+  if(a.fotos&&a.fotos.length)h+=`<div class="fotos">${a.fotos.map(f=>`<img src="${f}" onclick="window.open().document.write('<img src=&quot;'+this.src+'&quot; style=&quot;max-width:100%&quot;>')">`).join('')}</div>`;
+  h+=`<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><button class="btn sec" onclick="closeModal()">Cerrar</button><button class="btn sec" onclick="exportUno('${a.id}')">📤 Exportar este</button><button class="btn bad" onclick="borrarAtencion('${a.id}')">🗑️ Eliminar</button></div>`;
+  openModal(h);
+}
+async function borrarAtencion(id){if(!confirm('¿Eliminar este registro? No se puede deshacer.'))return;await dbDel('atenciones',id);ATENCIONES=ATENCIONES.filter(a=>a.id!==id);closeModal();renderHistorial();renderIncap();toast('Registro eliminado');}
+
+/* ========= FICHAS ========= */
+function renderPacientes(){
+  const q=norm($('pBuscar').value);
+  const arr=PACIENTES.filter(p=>!q||norm([p.nombre,p.numEmpleado,p.departamento].join(' ')).includes(q)).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
+  $('pLista').innerHTML=arr.length?arr.map(p=>{const n=ATENCIONES.filter(a=>a.pacienteId===p.id);const acc=n.filter(a=>a.tipo==='accidente').length;
+    return `<div class="item" data-id="${p.id}"><div class="top"><div><div class="nm">${esc(p.nombre)} ${p.numEmpleado?'<span style="color:var(--mut);font-weight:400">Ficha '+esc(p.numEmpleado)+'</span>':''}</div>
+    <div class="meta">${esc([p.campo,p.departamento,p.puesto].filter(Boolean).join(' · '))}</div>${p.alergias?`<div class="meta" style="color:#991b1b;font-weight:700">⚠️ Alergias: ${esc(p.alergias)}</div>`:''}</div>
+    <div style="text-align:right"><span class="pill">${n.length} atenciones</span>${acc?`<br><span class="pill a" style="margin-top:4px">${acc} accidente(s)</span>`:''}</div></div></div>`;}).join(''):'<div class="empty">Sin fichas. Se crean automáticamente al registrar una atención o con el botón ➕.</div>';
+  $('pLista').querySelectorAll('.item').forEach(el=>el.onclick=()=>openFicha(PACIENTES.find(p=>p.id===el.dataset.id),renderPacientes));
+}
+$('pBuscar').oninput=renderPacientes;
+$('btnNuevaFicha').onclick=()=>openFicha({campo:$('cfgCampo').value},renderPacientes);
+
+const FICHA_CAMPOS=[
+  ['numEmpleado','N° de ficha de trabajo *'],['nombre','Nombre completo *'],['campo','Campo','sel',CAMPOS],['departamento','Departamento','sel',DEPTOS],['puesto','Puesto'],
+  ['fechaNac','Fecha de nacimiento','date'],['sexo','Sexo','sel',['Masculino','Femenino']],['nss','N° de Seguro Social (NSS)'],['curp','CURP'],
+  ['tipoSangre','Tipo de sangre','sel',['O+','O-','A+','A-','B+','B-','AB+','AB-','Desconocido']],['alergias','Alergias'],['cronicas','Enfermedades crónicas / padecimientos'],
+  ['medicamentos','Medicamentos habituales'],['contactoNombre','Contacto de emergencia'],['contactoTel','Teléfono de emergencia','tel'],['fechaIngreso','Fecha de ingreso a la empresa','date'],['obs','Observaciones','area']
+];
+function edad(iso){if(!iso)return '';const b=new Date(iso),n=new Date();let e=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))e--;return e>=0?e+' años':'';}
+function openFicha(p,after){
+  p=p||{};
+  const hist=p.id?ATENCIONES.filter(a=>a.pacienteId===p.id).sort((a,b)=>b.horaAtencion-a.horaAtencion):[];
+  let h=`<h2 style="margin-top:0">👤 Ficha del paciente</h2>`;
+  if(p.foto)h+=`<img src="${p.foto}" style="width:90px;height:90px;object-fit:cover;border-radius:50%;float:right;border:2px solid var(--line)">`;
+  h+='<div id="fichaForm">'+FICHA_CAMPOS.map(([k,l,t,opts])=>{
+    const v=esc(p[k]||'');
+    if(t==='sel')return `<label>${l}</label><select data-k="${k}"><option value=""></option>${opts.map(o=>`<option ${p[k]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+    if(t==='area')return `<label>${l}</label><textarea data-k="${k}">${v}</textarea>`;
+    return `<label>${l}${k==='fechaNac'&&p.fechaNac?' <span style="font-weight:400">('+edad(p.fechaNac)+')</span>':''}</label><input data-k="${k}" type="${t||'text'}" value="${v}">`;
+  }).join('')+'</div>';
+  h+=`<label>Foto del trabajador</label><input type="file" accept="image/*" capture="user" id="fichaFoto">`;
+  if(hist.length){
+    const acc=hist.filter(a=>a.tipo==='accidente').length,inc=hist.filter(a=>a.tipo==='incapacidad').reduce((s,a)=>s+(a.dias||0),0);
+    h+=`<h3 style="margin-top:18px">Historial clínico (${hist.length}) · ${acc} accidente(s) · ${inc} día(s) de incapacidad</h3>`+hist.map(itemHTML).join('');
+  }
+  h+=`<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><button class="btn sec" id="fCancel">Cerrar</button><button class="btn" id="fSave">💾 Guardar ficha</button>${p.id?'<button class="btn bad" id="fDel">🗑️</button>':''}</div>`;
+  openModal(h);
+  let nuevaFoto=null;
+  $('fichaFoto').onchange=async e=>{const f=e.target.files[0];if(f){nuevaFoto=await compressImg(f,500,.7);toast('Foto lista, guarda la ficha');}};
+  $('modalBox').querySelectorAll('.item').forEach(el=>el.onclick=()=>openDetalle(el.dataset.id));
+  $('fCancel').onclick=closeModal;
+  $('fSave').onclick=async()=>{
+    const o={...p};$('fichaForm').querySelectorAll('[data-k]').forEach(el=>o[el.dataset.k]=el.value.trim());
+    if(!o.numEmpleado)return toast('El N° de ficha es obligatorio');
+    if(!o.nombre)return toast('El nombre es obligatorio');
+    const dup=PACIENTES.find(x=>x.id!==o.id&&((o.numEmpleado&&x.numEmpleado===o.numEmpleado)||norm(x.nombre)===norm(o.nombre)));
+    if(dup&&!confirm(`Ya existe una ficha de "${dup.nombre}"${dup.numEmpleado?' (ficha '+dup.numEmpleado+')':''}. ¿Guardar de todos modos?`))return;
+    if(!o.id){o.id=uid('P');o.creado=Date.now();}
+    if(nuevaFoto)o.foto=nuevaFoto;
+    o.actualizado=Date.now();o.exportado=false;
+    await dbPut('pacientes',o);const i=PACIENTES.findIndex(x=>x.id===o.id);if(i>=0)PACIENTES[i]=o;else PACIENTES.push(o);
+    refreshDatalists();closeModal();toast('✅ Ficha guardada');after&&after();
+  };
+  if(p.id)$('fDel').onclick=async()=>{if(hist.length)return toast('No se puede borrar: tiene atenciones registradas');if(!confirm('¿Eliminar ficha?'))return;await dbDel('pacientes',p.id);PACIENTES=PACIENTES.filter(x=>x.id!==p.id);closeModal();after&&after();};
+}
+
+/* ========= INCAPACIDADES ========= */
+function renderIncap(){
+  const hoy=todayISO();
+  const inc=ATENCIONES.filter(a=>a.tipo==='incapacidad');
+  const act=inc.filter(a=>a.estado!=='concluida').sort((a,b)=>(a.fechaFin||'').localeCompare(b.fechaFin||''));
+  $('incActivas').innerHTML=act.length?act.map(a=>{
+    const vencida=a.fechaFin&&a.fechaFin<hoy;const regresaHoy=a.fechaFin&&addDays(a.fechaFin,1)===hoy;
+    return `<div class="item" data-id="${a.id}"><div class="top"><div><div class="nm">${esc(a.nombre)} ${a.numEmpleado?'Ficha '+esc(a.numEmpleado):''}</div>
+    <div class="meta">${esc(a.incTipo)} · ${a.dias} día(s) · ${esc(a.campo)}</div><div class="meta">Del ${fmtD(a.fechaInicio)} al ${fmtD(a.fechaFin)}${a.fechaSeguimiento?' · Cita: '+fmtD(a.fechaSeguimiento):''}</div>
+    ${vencida?'<div class="meta" style="color:#991b1b;font-weight:700">⚠️ Ya terminó: confirmar regreso o nueva incapacidad</div>':''}${regresaHoy?'<div class="meta" style="color:#166534;font-weight:700">↩️ Debe regresar hoy</div>':''}</div>
+    <button class="btn sm" data-reg="${a.id}">Registrar regreso</button></div></div>`;}).join(''):'<div class="empty">Sin incapacidades vigentes</div>';
+  const lim=Date.now()-60*864e5;
+  const con=inc.filter(a=>a.estado==='concluida'&&a.creado>lim).sort((a,b)=>(b.fechaRegreso||'').localeCompare(a.fechaRegreso||''));
+  $('incConcluidas').innerHTML=con.length?con.map(itemHTML).join(''):'<div class="empty">—</div>';
+  document.querySelectorAll('#tab-incap .item').forEach(el=>el.onclick=e=>{if(e.target.dataset.reg)return;openDetalle(el.dataset.id);});
+  document.querySelectorAll('[data-reg]').forEach(b=>b.onclick=async e=>{e.stopPropagation();
+    const f=prompt('Fecha de regreso a labores (AAAA-MM-DD):',todayISO());if(!f)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(f))return toast('Formato inválido');
+    const a=ATENCIONES.find(x=>x.id===b.dataset.reg);a.estado='concluida';a.fechaRegreso=f;a.exportado=false;await dbPut('atenciones',a);renderIncap();toast('Regreso registrado');});
+}
+
+/* ========= EXPORTAR / IMPORTAR ========= */
+function renderResumenExport(){
+  const pa=ATENCIONES.filter(a=>!a.exportado).length,pp=PACIENTES.filter(p=>!p.exportado).length;
+  $('expResumen').innerHTML=`Total en este teléfono: <b>${ATENCIONES.length}</b> atenciones y <b>${PACIENTES.length}</b> fichas.<br>${pa||pp?`🟡 Pendientes de enviar: <b>${pa}</b> atenciones, <b>${pp}</b> fichas.`:'✅ Todo enviado.'}`;
+}
+function paquete(atenciones,pacientes){return {app:'servicio-medico',version:1,exportado:Date.now(),campo:$('cfgCampo').value,atiende:$('cfgAtiende').value,atenciones,pacientes};}
+async function marcarExportados(at,pa){const t=Date.now();for(const a of at){a.exportado=true;a.tsExportado=t;await dbPut('atenciones',a);}for(const p of pa){p.exportado=true;p.tsExportado=t;await dbPut('pacientes',p);}}
+function nombreArchivo(s){const c=($('cfgCampo').value||'campo').replace(/\s+/g,'_');const d=new Date();return `medico_${c}_${s}_${d.toISOString().slice(0,10)}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.json`;}
+$('btnExpPend').onclick=async()=>{
+  const at=ATENCIONES.filter(a=>!a.exportado),pa=PACIENTES.filter(p=>!p.exportado);
+  if(!at.length&&!pa.length)return toast('No hay pendientes de enviar');
+  // incluye las fichas de los pacientes atendidos para que el panel tenga la info completa
+  const ids=new Set(at.map(a=>a.pacienteId));const paAll=PACIENTES.filter(p=>!p.exportado||ids.has(p.id));
+  download(nombreArchivo('pendientes'),paquete(at,paAll));await marcarExportados(at,pa);renderResumenExport();toast('📤 Archivo generado');
+};
+$('btnExpTodo').onclick=async()=>{download(nombreArchivo('completo'),paquete(ATENCIONES,PACIENTES));await marcarExportados(ATENCIONES.filter(a=>!a.exportado),PACIENTES.filter(p=>!p.exportado));renderResumenExport();toast('📦 Respaldo completo generado');};
+function exportUno(id){const a=ATENCIONES.find(x=>x.id===id);const p=PACIENTES.filter(x=>x.id===a.pacienteId);download(nombreArchivo((a.nombre||'registro').split(' ')[0]),paquete([a],p));}
+$('impFile').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.atenciones))throw 0;
+    let n=0,m=0;
+    for(const a of d.atenciones){if(!ATENCIONES.find(x=>x.id===a.id)){await dbPut('atenciones',a);ATENCIONES.push(a);n++;}}
+    for(const p of d.pacientes||[]){const i=PACIENTES.findIndex(x=>x.id===p.id);if(i<0){await dbPut('pacientes',p);PACIENTES.push(p);m++;}else if((p.actualizado||0)>(PACIENTES[i].actualizado||0)){await dbPut('pacientes',p);PACIENTES[i]=p;}}
+    refreshDatalists();renderResumenExport();toast(`Importados ${n} atenciones y ${m} fichas nuevas`);
+  }catch(err){toast('Archivo no válido');}
+  e.target.value='';
+};
+$('btnBorrarTodo').onclick=async()=>{
+  const pend=ATENCIONES.filter(a=>!a.exportado).length;
+  if(!confirm(`¿Borrar TODO de este teléfono?${pend?`\n\n⚠️ Hay ${pend} registro(s) SIN ENVIAR que se perderán.`:''}`))return;
+  if(prompt('Escribe BORRAR para confirmar')!=='BORRAR')return;
+  await dbClear('atenciones');await dbClear('pacientes');ATENCIONES=[];PACIENTES=[];refreshDatalists();renderResumenExport();toast('Datos borrados');
+};
+
+/* ========= INICIO ========= */
+(async function init(){
+  fillSelect($('cfgCampo'),CAMPOS,'— Selecciona —');fillSelect($('pDepto'),DEPTOS,'—');
+  fillSelect($('aLesion'),LESIONES,'— Selecciona —');fillSelect($('aParte'),PARTES,'—');fillSelect($('aCausa'),CAUSAS,'—');
+  const cfg=loadCfg();if(cfg.campo)$('cfgCampo').value=cfg.campo;if(cfg.atiende)$('cfgAtiende').value=cfg.atiende;if(cfg.rol)$('cfgRol').value=cfg.rol;$('cfgRol').onchange=saveCfg;
+  $('cfgCampo').onchange=()=>{saveCfg();$('hdrSub').textContent='Campo: '+$('cfgCampo').value;};$('cfgAtiende').onchange=saveCfg;
+  if(cfg.campo)$('hdrSub').textContent='Campo: '+cfg.campo;
+  try{db=await openDB();ATENCIONES=await dbAll('atenciones');PACIENTES=await dbAll('pacientes');}catch(e){alert('No se pudo abrir la base de datos local: '+e);}
+  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
+  refreshDatalists();resetForm(false);
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
