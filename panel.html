@@ -55,7 +55,7 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#f8fafc}
 .tbl{max-height:520px;overflow:auto}
 .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#e2e8f0;color:#334155;white-space:nowrap}
 .pill.n1{background:#dcfce7;color:#166534}.pill.n2{background:#fef9c3;color:#854d0e}.pill.n3{background:#ffedd5;color:#9a3412}.pill.n4{background:#fee2e2;color:#991b1b}
-.pill.c{background:#e0f2fe;color:#075985}.pill.a{background:#fee2e2;color:#991b1b}.pill.i{background:#ede9fe;color:#5b21b6}
+.pill.c{background:#e0f2fe;color:#075985}.pill.a{background:#fee2e2;color:#991b1b}.pill.i{background:#ede9fe;color:#5b21b6}.pill.x{background:#fef3c7;color:#92400e}
 .pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.bad{background:#fee2e2;color:#991b1b}
 .empty{padding:40px 10px;text-align:center;color:var(--mut)}
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
@@ -103,7 +103,7 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#f8fafc}
     <div><label>Hasta</label><input type="date" id="fHasta"></div>
     <div><label>Día específico</label><input type="date" id="fFecha"></div>
     <div><label>Campo</label><select id="fCampo"></select></div>
-    <div><label>Tipo</label><select id="fTipo"><option value="">Todos</option><option value="consulta">Consultas</option><option value="accidente">Accidentes</option><option value="incapacidad">Incapacidades / pases</option></select></div>
+    <div><label>Tipo</label><select id="fTipo"><option value="">Todos</option><option value="consulta">Consultas</option><option value="accidente">Accidentes</option><option value="incapacidad">Incapacidades / pases</option><option value="extra">Consultas extras</option></select></div>
     <div><label>Nivel</label><select id="fNivel"><option value="">Todos</option><option value="1">1 · Leve</option><option value="2">2 · Moderado</option><option value="3">3 · Grave</option><option value="4">4 · Crítico</option></select></div>
     <div><label>Departamento</label><select id="fDepto"></select></div>
     <div><button class="btn sec sm" id="btnLimpiarF">Limpiar filtros</button></div>
@@ -132,6 +132,17 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#f8fafc}
       <div class="card"><h3>Accidentes de trabajo por campo: periodo actual vs anterior</h3><div class="desc" id="descComp">Comparativo contra el periodo inmediato anterior de la misma duración.</div><div class="chart" id="chAccComp"></div><div class="legend"><span><i style="background:#94a3b8"></i>Periodo anterior</span><span><i style="background:var(--a)"></i>Periodo actual</span></div><div class="insight" id="inAccComp"></div></div>
       <div class="card"><h3>Tendencia mensual de accidentes por campo</h3><div class="desc">Últimos 6 meses (no depende del filtro de fechas).</div><div class="chart" id="chAccMes"></div><div class="legend" id="lgAccMes"></div></div>
       <div class="card"><h3>Ingenieros / personas que más reportan accidentes</h3><div class="desc">Quién reporta y cuántos accidentes.</div><div class="chart" id="chReporta"></div></div>
+    </div>
+
+    <div class="sec-title">🤝 Consultas extras (sin código)</div>
+    <div class="desc" style="margin:-4px 0 10px;font-size:12.5px;color:var(--mut)">Personas que se acercaron a pedir revisión o medicamento sin que se generara un reporte o código. Se cuentan aparte: no afectan el tiempo de respuesta ni los niveles. Respetan los filtros de fechas, campo y departamento.</div>
+    <div class="grid">
+      <div class="card"><h3>Personas atendidas por campo: con código vs. extras</h3><div class="desc">Debajo de cada campo, el % que fueron consultas extras.</div><div class="chart" id="chExtraCampo"></div><div class="legend"><span><i style="background:#0f766e"></i>Atenciones con código</span><span><i style="background:#f59e0b"></i>Consultas extras</span></div><div class="insight" id="inExtra"></div></div>
+      <div class="card"><h3>Tendencia: con código vs. consultas extras</h3><div class="desc">Personas atendidas por día (por semana si el periodo es largo).</div><div class="chart" id="chExtraTend"></div><div class="legend"><span><i style="background:#0f766e"></i>Con código</span><span><i style="background:#f59e0b"></i>Extras</span></div></div>
+      <div class="card"><h3>¿Qué piden en las consultas extras?</h3><div class="chart" id="chExtraMotivo"></div></div>
+      <div class="card"><h3>Medicamento entregado sin código</h3><div class="desc">Veces que se entregó cada medicamento en consultas extras.</div><div class="chart" id="chExtraMed"></div></div>
+      <div class="card"><h3>Atenciones que generaron más consultas extras</h3><div class="desc">Reportes con código durante los cuales se acercaron más personas.</div><div class="tbl" id="tbExtraOrigen"></div></div>
+      <div class="card"><h3>Personas que más piden consulta extra</h3><div class="desc">2 o más consultas extras en el periodo.</div><div class="tbl" id="tbExtraPersonas"></div></div>
     </div>
 
     <div class="sec-title">🚦 Nivel de atención (gravedad)</div>
@@ -174,8 +185,8 @@ const CAMPOS=['Palomas','El Milagro Uno','El Milagro Dos','El Milagro Tres','San
 const TIPOS=[{k:'consulta',n:'Consultas',c:'#0284c7'},{k:'accidente',n:'Accidentes',c:'#dc2626'},{k:'incapacidad',n:'Incapacidades / pases',c:'#7c3aed'}];
 const NIV_COL={1:'#16a34a',2:'#eab308',3:'#f97316',4:'#dc2626'};
 const NIV_LBL={1:'Leve',2:'Moderado',3:'Grave',4:'Crítico'};
-const TIPO_LBL={consulta:'Consulta',accidente:'Accidente',incapacidad:'Incapacidad / Pase'};
-const TIPO_CLS={consulta:'c',accidente:'a',incapacidad:'i'};
+const TIPO_LBL={consulta:'Consulta',accidente:'Accidente',incapacidad:'Incapacidad / Pase',extra:'Consulta extra'};
+const TIPO_CLS={consulta:'c',accidente:'a',incapacidad:'i',extra:'x'};
 const CFG_KEY='servicio_medico_panel_cfg_v1';
 let CFG={meta:15};try{CFG=Object.assign(CFG,JSON.parse(localStorage.getItem(CFG_KEY))||{});}catch(e){}
 
@@ -307,6 +318,10 @@ $('fFecha').onchange=()=>{document.querySelectorAll('#quick button').forEach(b=>
 ['fCampo','fTipo','fNivel','fDepto'].forEach(i=>$(i).onchange=render);
 $('btnLimpiarF').onclick=()=>{['fCampo','fTipo','fNivel','fDepto'].forEach(i=>$(i).value='');setQuick('30');};
 $('tBuscar').oninput=()=>renderTabla(filtrar());
+function filtrarExtras(){
+  const r=rango(),c=$('fCampo').value,dp=$('fDepto').value;
+  return ALL.filter(a=>a.tipo==='extra'&&(!r.d||a.horaAtencion>=r.d)&&(!r.h||a.horaAtencion<=r.h)&&(!c||a.campo===c)&&(!dp||a.departamento===dp));
+}
 
 function fillFiltros(){
   const campos=[...new Set(CAMPOS.concat(ALL.map(a=>a.campo).filter(Boolean)))];
@@ -322,13 +337,15 @@ function render(){
   const camposFuente=[...new Set(ALL.map(a=>a.campo))].length;
   $('hdrInfo').textContent=hay?`${ALL.length} atenciones · ${PAC.length} fichas · ${camposFuente} campo(s) · última atención ${fmtDT(Math.max(...ALL.map(a=>a.horaAtencion||0)))}`:'Sin datos cargados';
   if(!hay)return;
-  const F=filtrar();
+  const FALL=filtrar();
+  const F=FALL.filter(a=>a.tipo!=='extra');
+  const X=filtrarExtras();
   const r=rango();
   $('printPeriodo').textContent=`Periodo: ${r.d?fmtD(dayKey(r.d)):'inicio'} a ${r.h?fmtD(dayKey(r.h)):'hoy'}${$('fCampo').value?' · Campo: '+$('fCampo').value:' · Todos los campos'} · Generado ${fmtDT(Date.now())}`;
-  renderKpis(F);renderResp(F);renderCampos(F);renderNiveles(F);renderClinico(F);renderIncap();renderRecurrentes(F);renderTabla(F);
+  renderKpis(F,X);renderResp(F);renderCampos(F);renderExtras(F,X);renderNiveles(F);renderClinico(F);renderIncap();renderRecurrentes(F.concat(X));renderTabla(FALL);
 }
 
-function renderKpis(F){
+function renderKpis(F,X){
   const rs=F.map(resp).filter(v=>v!=null);const pr=avg(rs);const dentro=rs.filter(v=>v<=CFG.meta).length;
   const cons=F.filter(a=>a.tipo==='consulta').length,acc=F.filter(a=>a.tipo==='accidente'),inc=F.filter(a=>a.tipo==='incapacidad');
   const porCampo=countBy(F,a=>a.campo);const accCampo=countBy(acc,a=>a.campo);
@@ -338,7 +355,7 @@ function renderKpis(F){
   const graves=F.filter(a=>a.nivel>=3).length;
   const pctMeta=pct(dentro,rs.length);
   const K=[
-    {l:'Total de atenciones',v:F.length,s:`${cons} consultas · ${acc.length} accidentes · ${inc.length} pases/incap.`},
+    {l:'Atenciones con código',v:F.length,s:`${cons} consultas · ${acc.length} accidentes · ${inc.length} pases/incap.`},
     {l:'Tiempo de respuesta promedio',v:fmtMin(pr),s:`Mediana ${fmtMin(median(rs))} · meta ≤ ${CFG.meta} min`,c:respCls(pr)},
     {l:'% atendido dentro de meta',v:rs.length?pctMeta+'%':'—',s:`${dentro} de ${rs.length} atenciones`,c:!rs.length?'':pctMeta>=90?'ok':pctMeta>=75?'warn':'bad'},
     {l:'Campo con más reportes',v:porCampo[0]?porCampo[0][0]:'—',s:porCampo[0]?`${porCampo[0][1]} atenciones (${pct(porCampo[0][1],F.length)}%)`:'',sm:1},
@@ -346,6 +363,7 @@ function renderKpis(F){
     {l:'Nivel más frecuente',v:niv[0]?`Nivel ${niv[0][0]}`:'—',s:niv[0]?`${NIV_LBL[niv[0][0]]} · ${niv[0][1]} casos (${pct(niv[0][1],F.length)}%)`:''},
     {l:'Casos graves / críticos',v:graves,s:`Niveles 3 y 4 · ${pct(graves,F.length)}% del total`,c:graves?'warn':'ok'},
     {l:'Días de incapacidad',v:diasInc,s:`${vig} incapacidad(es)/pase(s) vigente(s)`},
+    {l:'Consultas extras (sin código)',v:X.length,s:`${pct(X.length,F.length+X.length)}% de las personas atendidas · ${F.length?(Math.round(X.length/F.length*10)/10):0} por cada atención con código`,c:X.length?'warn':''},
   ];
   $('kpis').innerHTML=K.map(k=>`<div class="kpi ${k.c||''}"><div class="l">${k.l}</div><div class="v" ${k.sm?'style="font-size:20px"':''}>${esc(k.v)}</div><div class="s">${esc(k.s||'')}</div></div>`).join('');
 }
@@ -403,6 +421,36 @@ function renderCampos(F){
   hbar($('chReporta'),countBy(acc,a=>a.reportaNombre?a.reportaNombre+(a.reportaTipo?' ('+a.reportaTipo.split(' ')[0]+')':''):null).map(([l,v])=>({label:l,value:v,color:'#b91c1c'})),{labelW:210});
 }
 
+
+function serieTiempo(arrs){
+  const todos=arrs.flat();if(!todos.length)return {labels:[],series:arrs.map(()=>[])};
+  const r=rango();const d0=r.d||Math.min(...todos.map(a=>a.horaAtencion)),d1=r.h||Date.now();
+  const semanal=(d1-d0)/864e5>45;
+  const keyOf=ts=>{if(!semanal)return dayKey(ts);const d=new Date(ts);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return dayKey(d.getTime());};
+  const keys=[],labels=[];const c=new Date(d0);c.setHours(0,0,0,0);if(semanal)c.setDate(c.getDate()-((c.getDay()+6)%7));
+  while(c.getTime()<=d1&&keys.length<400){const k=dayKey(c.getTime());keys.push(k);labels.push((semanal?'Sem ':'')+k.slice(8)+'/'+k.slice(5,7));c.setDate(c.getDate()+(semanal?7:1));}
+  return {labels,series:arrs.map(arr=>{const m={};arr.forEach(a=>{const k=keyOf(a.horaAtencion);m[k]=(m[k]||0)+1;});return keys.map(k=>m[k]||0);})};
+}
+function renderExtras(F,X){
+  const cats=[...new Set(countBy(F.concat(X),a=>a.campo).map(t=>t[0]))];
+  const vo=cats.map(c=>F.filter(a=>a.campo===c).length),vx=cats.map(c=>X.filter(a=>a.campo===c).length);
+  grouped($('chExtraCampo'),cats,[{name:'Con código',color:'#0f766e',values:vo},{name:'Extras',color:'#f59e0b',values:vx}],{sub:cats.map((c,i)=>({t:pct(vx[i],vo[i]+vx[i])+'% extra',c:'#b45309'}))});
+  const xc=countBy(X,a=>a.campo);
+  const conOrigen=X.filter(a=>a.origenId).length;
+  $('inExtra').innerHTML=X.length?`📌 Se atendieron <b>${X.length}</b> consultas extras (${pct(X.length,F.length+X.length)}% de todas las personas atendidas). <b>${esc(xc[0][0])}</b> es el campo con más (${xc[0][1]}). ${conOrigen} se dieron durante la atención de un reporte con código.`:'Sin consultas extras en el periodo.';
+  const st=serieTiempo([F,X]);
+  lines($('chExtraTend'),st.labels,[{name:'Con código',color:'#0f766e',values:st.series[0]},{name:'Extras',color:'#f59e0b',values:st.series[1]}]);
+  hbar($('chExtraMotivo'),countBy(X,a=>a.motivoExtra).map(([l,v])=>({label:l,value:v,color:'#f59e0b'})),{labelW:190});
+  hbar($('chExtraMed'),countBy(X,a=>a.medicamento?a.medicamento.trim():null).map(([l,v])=>({label:l,value:v,color:'#d97706'})),{labelW:190});
+  const og={};X.filter(a=>a.origenId).forEach(a=>{(og[a.origenId]=og[a.origenId]||[]).push(a);});
+  const ogs=Object.values(og).sort((a,b)=>b.length-a.length).slice(0,15);
+  $('tbExtraOrigen').innerHTML=ogs.length?`<table><thead><tr><th>Atención con código</th><th>Campo</th><th>Extras</th></tr></thead><tbody>${ogs.map(x=>{const o=ALL.find(a=>a.id===x[0].origenId);return `<tr data-id="${esc(x[0].origenId)}"><td>${o?`<b>${esc(o.nombre)}</b><br><span style="color:var(--mut)">${fmtDT(o.horaAtencion)} · ${TIPO_LBL[o.tipo]}${o.nivel?' N'+o.nivel:''}</span>`:esc(x[0].origenDesc||'')}</td><td>${esc(x[0].campo)}</td><td><span class="pill x">${x.length}</span><br><span style="color:var(--mut);font-size:11.5px">${esc(x.map(y=>y.nombre.split(' ')[0]).join(', '))}</span></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty" style="padding:20px">Sin datos</div>';
+  $('tbExtraOrigen').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>detalle(tr.dataset.id));
+  const gp={};X.forEach(a=>{const k=a.numEmpleado||norm(a.nombre);(gp[k]=gp[k]||[]).push(a);});
+  const per=Object.values(gp).filter(x=>x.length>=2).sort((a,b)=>b.length-a.length);
+  $('tbExtraPersonas').innerHTML=per.length?`<table><thead><tr><th>Persona</th><th>Campo</th><th>Extras</th><th>Lo que más pide</th></tr></thead><tbody>${per.map(x=>{const a=x[0];const m=countBy(x,y=>y.medicamento||y.motivoExtra);return `<tr data-ficha="${esc(a.numEmpleado||'')}" data-nom="${esc(a.nombre)}"><td><b>${esc(a.nombre)}</b><br><span style="color:var(--mut)">Ficha ${esc(a.numEmpleado||'—')}</span></td><td>${esc(a.campo)}</td><td>${x.length}</td><td>${esc(m[0]?m[0][0]:'—')}</td></tr>`;}).join('')}</tbody></table>`:'<div class="empty" style="padding:20px">Nadie con 2 o más consultas extras</div>';
+  $('tbExtraPersonas').querySelectorAll('tr[data-nom]').forEach(tr=>tr.onclick=()=>{$('tBuscar').value=tr.dataset.ficha||tr.dataset.nom;renderTabla(filtrar());$('tablaWrap').scrollIntoView({behavior:'smooth'});});
+}
 function renderNiveles(F){
   const tot=F.length;
   vbar($('chNivel'),[1,2,3,4].map(n=>{const v=F.filter(a=>+a.nivel===n).length;return {label:'Nivel '+n,sub:NIV_LBL[n]+(tot?' · '+pct(v,tot)+'%':''),value:v,color:NIV_COL[n]};}));
@@ -441,7 +489,7 @@ function renderTabla(F){
   const q=norm($('tBuscar').value);
   const arr=F.filter(a=>!q||norm([a.nombre,a.numEmpleado,a.diagnostico,a.tipoLesion,a.reportaNombre,a.atiende,a.campo,a.departamento].join(' ')).includes(q)).sort((a,b)=>b.horaAtencion-a.horaAtencion);
   $('tCount').textContent=arr.length+' registro(s)';
-  $('tbRegistros').innerHTML=arr.length?`<table><thead><tr><th>Fecha atención</th><th>Tipo</th><th>Nivel</th><th>Trabajador</th><th>Campo / Depto</th><th>Diagnóstico / lesión</th><th>Reportó</th><th>T. respuesta</th><th>Atendió</th></tr></thead><tbody>${arr.slice(0,1000).map(a=>{const r=resp(a);return `<tr data-id="${a.id}"><td>${fmtDT(a.horaAtencion)}</td><td><span class="pill ${TIPO_CLS[a.tipo]}">${TIPO_LBL[a.tipo]}</span></td><td><span class="pill n${a.nivel}">${a.nivel} · ${NIV_LBL[a.nivel]||''}</span></td><td><b>${esc(a.nombre)}</b><br><span style="color:var(--mut)">Ficha ${esc(a.numEmpleado||'—')}</span></td><td>${esc(a.campo)}<br><span style="color:var(--mut)">${esc(a.departamento||'')}</span></td><td>${esc(a.diagnostico||a.tipoLesion||a.incTipo||'')}</td><td>${esc(a.reportaNombre||'')}<br><span style="color:var(--mut)">${esc(a.reportaTipo||'')}</span></td><td><span class="pill ${respCls(r)}">${fmtMin(r)}</span></td><td>${esc(a.atiende||'')}<br><span style="color:var(--mut)">${esc(a.atiendeRol||'')}</span></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty">Sin registros</div>';
+  $('tbRegistros').innerHTML=arr.length?`<table><thead><tr><th>Fecha atención</th><th>Tipo</th><th>Nivel</th><th>Trabajador</th><th>Campo / Depto</th><th>Diagnóstico / lesión</th><th>Reportó</th><th>T. respuesta</th><th>Atendió</th></tr></thead><tbody>${arr.slice(0,1000).map(a=>{const r=resp(a);return `<tr data-id="${a.id}"><td>${fmtDT(a.horaAtencion)}</td><td><span class="pill ${TIPO_CLS[a.tipo]}">${TIPO_LBL[a.tipo]}</span></td><td>${a.nivel?`<span class="pill n${a.nivel}">${a.nivel} · ${NIV_LBL[a.nivel]||''}</span>`:'—'}</td><td><b>${esc(a.nombre)}</b><br><span style="color:var(--mut)">Ficha ${esc(a.numEmpleado||'—')}</span></td><td>${esc(a.campo)}<br><span style="color:var(--mut)">${esc(a.departamento||'')}</span></td><td>${esc(a.tipo==='extra'?[a.motivoExtra,a.medicamento].filter(Boolean).join(' · '):(a.diagnostico||a.tipoLesion||a.incTipo||''))}</td><td>${a.tipo==='extra'?'<span style="color:var(--mut)">Sin código</span>':`${esc(a.reportaNombre||'')}<br><span style="color:var(--mut)">${esc(a.reportaTipo||'')}</span>`}</td><td>${a.tipo==='extra'?'—':`<span class="pill ${respCls(r)}">${fmtMin(r)}</span>`}</td><td>${esc(a.atiende||'')}<br><span style="color:var(--mut)">${esc(a.atiendeRol||'')}</span></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty">Sin registros</div>';
   $('tbRegistros').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>detalle(tr.dataset.id));
 }
 
@@ -451,11 +499,12 @@ function detalle(id){
   const a=ALL.find(x=>x.id===id);if(!a)return;const s=a.signos||{};const r=resp(a);
   const p=PAC.find(x=>x.id===a.pacienteId)||{};
   const sv=[s.ta&&'T/A '+s.ta,s.fc&&'FC '+s.fc,s.temp&&'T '+s.temp+'°C',s.spo2&&'SpO₂ '+s.spo2+'%',s.fr&&'FR '+s.fr,s.glucosa&&'Glu '+s.glucosa].filter(Boolean).join(' · ');
-  let h=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">${TIPO_LBL[a.tipo]} <span class="pill n${a.nivel}">Nivel ${a.nivel} · ${NIV_LBL[a.nivel]}</span></h2><button class="btn sec sm" onclick="$('modal').classList.add('hide')">✕</button></div><br>`;
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">${TIPO_LBL[a.tipo]} ${a.nivel?`<span class="pill n${a.nivel}">Nivel ${a.nivel} · ${NIV_LBL[a.nivel]}</span>`:''}</h2><button class="btn sec sm" onclick="$('modal').classList.add('hide')">✕</button></div><br>`;
   h+=dlist([['Trabajador',a.nombre],['N° de ficha',a.numEmpleado],['Campo',a.campo],['Departamento',a.departamento],['Puesto',a.puesto],
     ['Alergias',p.alergias?`<b style="color:#b91c1c">${esc(p.alergias)}</b>`:'',1],['Padecimientos',p.cronicas],['Tipo de sangre',p.tipoSangre],['NSS',p.nss],
     ['Atendió',[a.atiende,a.atiendeRol].filter(Boolean).join(' · ')],['Reportó',[a.reportaNombre,a.reportaTipo].filter(Boolean).join(' · ')],['Medio',a.reportaMedio],
-    ['Hora reporte',fmtDT(a.horaReporte)],['Hora atención',fmtDT(a.horaAtencion)],['Tiempo de respuesta',`<span class="pill ${respCls(r)}">${fmtMin(r)}</span>`,1],
+    ['Hora reporte',a.horaReporte?fmtDT(a.horaReporte):''],['Hora atención',fmtDT(a.horaAtencion)],['Tiempo de respuesta',a.tipo==='extra'?'':`<span class="pill ${respCls(r)}">${fmtMin(r)}</span>`,1],
+    ['Se acercó durante',a.tipo==='extra'?(a.origenDesc||'Sin atención con código'):''],['Qué pidió',a.motivoExtra],['Medicamento entregado',[a.medicamento,a.cantidad].filter(Boolean).join(' — ')],
     ['Motivo / hallazgos',a.motivo],['Signos vitales',sv],['Diagnóstico',a.diagnostico],['Tratamiento',a.tratamiento],['Destino',a.destino],
     ['Hora accidente',a.horaAccidente?fmtDT(a.horaAccidente):''],['Lugar',a.lugar],['Actividad',a.actividad],['Tipo de lesión',a.tipoLesion],['Parte del cuerpo',a.parteCuerpo],['Causa',a.causa],['Descripción',a.descripcion],['Testigos',a.testigos],['EPP',a.epp],
     ['Traslado',a.tipo==='accidente'?(a.traslado?'Sí':'No'):''],['ST-7',a.tipo==='accidente'?(a.st7?'Sí':'No'):''],
