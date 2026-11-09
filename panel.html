@@ -135,14 +135,12 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#f8fafc}
     </div>
 
     <div class="sec-title">🤝 Consultas extras (sin código)</div>
-    <div class="desc" style="margin:-4px 0 10px;font-size:12.5px;color:var(--mut)">Personas que se acercaron a pedir revisión o medicamento sin que se generara un reporte o código. Se cuentan aparte: no afectan el tiempo de respuesta ni los niveles. Respetan los filtros de fechas, campo y departamento.</div>
+    <div class="desc" style="margin:-4px 0 10px;font-size:12.5px;color:var(--mut)">Personas que se acercaron a pedir medicamento o revisión durante una atención con código, sin generar código propio. Se cuentan aparte: no afectan tiempo de respuesta ni niveles.</div>
     <div class="grid">
       <div class="card"><h3>Personas atendidas por campo: con código vs. extras</h3><div class="desc">Debajo de cada campo, el % que fueron consultas extras.</div><div class="chart" id="chExtraCampo"></div><div class="legend"><span><i style="background:#0f766e"></i>Atenciones con código</span><span><i style="background:#f59e0b"></i>Consultas extras</span></div><div class="insight" id="inExtra"></div></div>
       <div class="card"><h3>Tendencia: con código vs. consultas extras</h3><div class="desc">Personas atendidas por día (por semana si el periodo es largo).</div><div class="chart" id="chExtraTend"></div><div class="legend"><span><i style="background:#0f766e"></i>Con código</span><span><i style="background:#f59e0b"></i>Extras</span></div></div>
-      <div class="card"><h3>¿Qué piden en las consultas extras?</h3><div class="chart" id="chExtraMotivo"></div></div>
-      <div class="card"><h3>Medicamento entregado sin código</h3><div class="desc">Veces que se entregó cada medicamento en consultas extras.</div><div class="chart" id="chExtraMed"></div></div>
-      <div class="card"><h3>Atenciones que generaron más consultas extras</h3><div class="desc">Reportes con código durante los cuales se acercaron más personas.</div><div class="tbl" id="tbExtraOrigen"></div></div>
-      <div class="card"><h3>Personas que más piden consulta extra</h3><div class="desc">2 o más consultas extras en el periodo.</div><div class="tbl" id="tbExtraPersonas"></div></div>
+      <div class="card"><h3>Promedio de consultas extras por atención</h3><div class="desc">Cuántas personas extra se acercan, en promedio, cada vez que se atiende un código en el campo.</div><div class="chart" id="chExtraProm"></div></div>
+      <div class="card"><h3>Atenciones que generaron más consultas extras</h3><div class="tbl" id="tbExtraOrigen"></div></div>
     </div>
 
     <div class="sec-title">🚦 Nivel de atención (gravedad)</div>
@@ -318,6 +316,8 @@ $('fFecha').onchange=()=>{document.querySelectorAll('#quick button').forEach(b=>
 ['fCampo','fTipo','fNivel','fDepto'].forEach(i=>$(i).onchange=render);
 $('btnLimpiarF').onclick=()=>{['fCampo','fTipo','fNivel','fDepto'].forEach(i=>$(i).value='');setQuick('30');};
 $('tBuscar').oninput=()=>renderTabla(filtrar());
+const nExt=a=>a.tipo==='extra'?1:Math.max(0,+a.consultasExtras||0); // registros antiguos de 'consulta extra' cuentan como 1
+const sumExt=arr=>arr.reduce((t,a)=>t+nExt(a),0);
 function filtrarExtras(){
   const r=rango(),c=$('fCampo').value,dp=$('fDepto').value;
   return ALL.filter(a=>a.tipo==='extra'&&(!r.d||a.horaAtencion>=r.d)&&(!r.h||a.horaAtencion<=r.h)&&(!c||a.campo===c)&&(!dp||a.departamento===dp));
@@ -363,7 +363,7 @@ function renderKpis(F,X){
     {l:'Nivel más frecuente',v:niv[0]?`Nivel ${niv[0][0]}`:'—',s:niv[0]?`${NIV_LBL[niv[0][0]]} · ${niv[0][1]} casos (${pct(niv[0][1],F.length)}%)`:''},
     {l:'Casos graves / críticos',v:graves,s:`Niveles 3 y 4 · ${pct(graves,F.length)}% del total`,c:graves?'warn':'ok'},
     {l:'Días de incapacidad',v:diasInc,s:`${vig} incapacidad(es)/pase(s) vigente(s)`},
-    {l:'Consultas extras (sin código)',v:X.length,s:`${pct(X.length,F.length+X.length)}% de las personas atendidas · ${F.length?(Math.round(X.length/F.length*10)/10):0} por cada atención con código`,c:X.length?'warn':''},
+    {l:'Consultas extras (sin código)',v:sumExt(F)+sumExt(X),s:`${pct(sumExt(F)+sumExt(X),F.length+sumExt(F)+sumExt(X))}% de las personas atendidas · ${F.length?(Math.round((sumExt(F)+sumExt(X))/F.length*10)/10):0} por cada atención con código`,c:(sumExt(F)+sumExt(X))?'warn':''},
   ];
   $('kpis').innerHTML=K.map(k=>`<div class="kpi ${k.c||''}"><div class="l">${k.l}</div><div class="v" ${k.sm?'style="font-size:20px"':''}>${esc(k.v)}</div><div class="s">${esc(k.s||'')}</div></div>`).join('');
 }
@@ -422,34 +422,30 @@ function renderCampos(F){
 }
 
 
-function serieTiempo(arrs){
+function serieTiempo(arrs,pesos){
   const todos=arrs.flat();if(!todos.length)return {labels:[],series:arrs.map(()=>[])};
   const r=rango();const d0=r.d||Math.min(...todos.map(a=>a.horaAtencion)),d1=r.h||Date.now();
   const semanal=(d1-d0)/864e5>45;
   const keyOf=ts=>{if(!semanal)return dayKey(ts);const d=new Date(ts);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return dayKey(d.getTime());};
   const keys=[],labels=[];const c=new Date(d0);c.setHours(0,0,0,0);if(semanal)c.setDate(c.getDate()-((c.getDay()+6)%7));
   while(c.getTime()<=d1&&keys.length<400){const k=dayKey(c.getTime());keys.push(k);labels.push((semanal?'Sem ':'')+k.slice(8)+'/'+k.slice(5,7));c.setDate(c.getDate()+(semanal?7:1));}
-  return {labels,series:arrs.map(arr=>{const m={};arr.forEach(a=>{const k=keyOf(a.horaAtencion);m[k]=(m[k]||0)+1;});return keys.map(k=>m[k]||0);})};
+  return {labels,series:arrs.map((arr,i)=>{const w=(pesos&&pesos[i])||(()=>1);const m={};arr.forEach(a=>{const k=keyOf(a.horaAtencion);m[k]=(m[k]||0)+w(a);});return keys.map(k=>m[k]||0);})};
 }
 function renderExtras(F,X){
-  const cats=[...new Set(countBy(F.concat(X),a=>a.campo).map(t=>t[0]))];
-  const vo=cats.map(c=>F.filter(a=>a.campo===c).length),vx=cats.map(c=>X.filter(a=>a.campo===c).length);
+  const todo=F.concat(X);
+  const cats=[...new Set(countBy(todo,a=>a.campo).map(t=>t[0]))];
+  const vo=cats.map(c=>F.filter(a=>a.campo===c).length),vx=cats.map(c=>sumExt(todo.filter(a=>a.campo===c)));
   grouped($('chExtraCampo'),cats,[{name:'Con código',color:'#0f766e',values:vo},{name:'Extras',color:'#f59e0b',values:vx}],{sub:cats.map((c,i)=>({t:pct(vx[i],vo[i]+vx[i])+'% extra',c:'#b45309'}))});
-  const xc=countBy(X,a=>a.campo);
-  const conOrigen=X.filter(a=>a.origenId).length;
-  $('inExtra').innerHTML=X.length?`📌 Se atendieron <b>${X.length}</b> consultas extras (${pct(X.length,F.length+X.length)}% de todas las personas atendidas). <b>${esc(xc[0][0])}</b> es el campo con más (${xc[0][1]}). ${conOrigen} se dieron durante la atención de un reporte con código.`:'Sin consultas extras en el periodo.';
-  const st=serieTiempo([F,X]);
+  const tot=sumExt(todo);
+  const top=cats.map((c,i)=>[c,vx[i]]).sort((a,b)=>b[1]-a[1])[0];
+  const conExt=F.filter(a=>+a.consultasExtras>0).length;
+  $('inExtra').innerHTML=tot?`📌 Se atendieron <b>${tot}</b> consultas extras (${pct(tot,F.length+tot)}% de todas las personas atendidas). <b>${esc(top[0])}</b> es el campo con más (${top[1]}). En <b>${conExt}</b> de ${F.length} atenciones con código se acercaron personas extra.`:'Sin consultas extras en el periodo.';
+  const st=serieTiempo([F,todo],[()=>1,nExt]);
   lines($('chExtraTend'),st.labels,[{name:'Con código',color:'#0f766e',values:st.series[0]},{name:'Extras',color:'#f59e0b',values:st.series[1]}]);
-  hbar($('chExtraMotivo'),countBy(X,a=>a.motivoExtra).map(([l,v])=>({label:l,value:v,color:'#f59e0b'})),{labelW:190});
-  hbar($('chExtraMed'),countBy(X,a=>a.medicamento?a.medicamento.trim():null).map(([l,v])=>({label:l,value:v,color:'#d97706'})),{labelW:190});
-  const og={};X.filter(a=>a.origenId).forEach(a=>{(og[a.origenId]=og[a.origenId]||[]).push(a);});
-  const ogs=Object.values(og).sort((a,b)=>b.length-a.length).slice(0,15);
-  $('tbExtraOrigen').innerHTML=ogs.length?`<table><thead><tr><th>Atención con código</th><th>Campo</th><th>Extras</th></tr></thead><tbody>${ogs.map(x=>{const o=ALL.find(a=>a.id===x[0].origenId);return `<tr data-id="${esc(x[0].origenId)}"><td>${o?`<b>${esc(o.nombre)}</b><br><span style="color:var(--mut)">${fmtDT(o.horaAtencion)} · ${TIPO_LBL[o.tipo]}${o.nivel?' N'+o.nivel:''}</span>`:esc(x[0].origenDesc||'')}</td><td>${esc(x[0].campo)}</td><td><span class="pill x">${x.length}</span><br><span style="color:var(--mut);font-size:11.5px">${esc(x.map(y=>y.nombre.split(' ')[0]).join(', '))}</span></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty" style="padding:20px">Sin datos</div>';
+  hbar($('chExtraProm'),cats.map((c,i)=>{const v=vo[i]?Math.round(vx[i]/vo[i]*10)/10:0;return {label:c,value:v,txt:v+' por atención',color:'#f59e0b'};}).filter(x=>x.value>0).sort((a,b)=>b.value-a.value),{labelW:130});
+  const ogs=F.filter(a=>+a.consultasExtras>0).sort((a,b)=>b.consultasExtras-a.consultasExtras||b.horaAtencion-a.horaAtencion).slice(0,15);
+  $('tbExtraOrigen').innerHTML=ogs.length?`<table><thead><tr><th>Atención con código</th><th>Campo</th><th>Extras</th></tr></thead><tbody>${ogs.map(o=>`<tr data-id="${esc(o.id)}"><td><b>${esc(o.nombre)}</b><br><span style="color:var(--mut)">${fmtDT(o.horaAtencion)} · ${TIPO_LBL[o.tipo]}${o.nivel?' N'+o.nivel:''}</span></td><td>${esc(o.campo)}</td><td><span class="pill x">${o.consultasExtras}</span></td></tr>`).join('')}</tbody></table>`:'<div class="empty" style="padding:20px">Sin datos</div>';
   $('tbExtraOrigen').querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>detalle(tr.dataset.id));
-  const gp={};X.forEach(a=>{const k=a.numEmpleado||norm(a.nombre);(gp[k]=gp[k]||[]).push(a);});
-  const per=Object.values(gp).filter(x=>x.length>=2).sort((a,b)=>b.length-a.length);
-  $('tbExtraPersonas').innerHTML=per.length?`<table><thead><tr><th>Persona</th><th>Campo</th><th>Extras</th><th>Lo que más pide</th></tr></thead><tbody>${per.map(x=>{const a=x[0];const m=countBy(x,y=>y.medicamento||y.motivoExtra);return `<tr data-ficha="${esc(a.numEmpleado||'')}" data-nom="${esc(a.nombre)}"><td><b>${esc(a.nombre)}</b><br><span style="color:var(--mut)">Ficha ${esc(a.numEmpleado||'—')}</span></td><td>${esc(a.campo)}</td><td>${x.length}</td><td>${esc(m[0]?m[0][0]:'—')}</td></tr>`;}).join('')}</tbody></table>`:'<div class="empty" style="padding:20px">Nadie con 2 o más consultas extras</div>';
-  $('tbExtraPersonas').querySelectorAll('tr[data-nom]').forEach(tr=>tr.onclick=()=>{$('tBuscar').value=tr.dataset.ficha||tr.dataset.nom;renderTabla(filtrar());$('tablaWrap').scrollIntoView({behavior:'smooth'});});
 }
 function renderNiveles(F){
   const tot=F.length;
@@ -509,6 +505,7 @@ function detalle(id){
     ['Hora accidente',a.horaAccidente?fmtDT(a.horaAccidente):''],['Lugar',a.lugar],['Actividad',a.actividad],['Tipo de lesión',a.tipoLesion],['Parte del cuerpo',a.parteCuerpo],['Causa',a.causa],['Descripción',a.descripcion],['Testigos',a.testigos],['EPP',a.epp],
     ['Traslado',a.tipo==='accidente'?(a.traslado?'Sí':'No'):''],['ST-7',a.tipo==='accidente'?(a.st7?'Sí':'No'):''],
     ['Documento',a.incTipo],['Folio',a.folio],['Días',a.tipo==='incapacidad'?a.dias:''],['Periodo',a.fechaInicio?fmtD(a.fechaInicio)+' al '+fmtD(a.fechaFin):''],['Seguimiento',a.fechaSeguimiento?fmtD(a.fechaSeguimiento):''],['Estado',a.estado],['Regresó',a.fechaRegreso?fmtD(a.fechaRegreso):''],
+    ['Consultas extras',a.consultasExtras?a.consultasExtras+' persona(s) sin código':''],
     ['Notas',a.notas]]);
   if(a.fotos&&a.fotos.length)h+=`<div class="fotos">${a.fotos.map(f=>`<a href="${f}" target="_blank"><img src="${f}"></a>`).join('')}</div>`;
   $('modalBox').innerHTML=h;$('modal').classList.remove('hide');
